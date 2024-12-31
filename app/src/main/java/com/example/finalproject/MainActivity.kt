@@ -63,11 +63,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.Image
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.Image
+import androidx.compose.material.icons.filled.Add
 
 
 class MainActivity : ComponentActivity() {
@@ -117,12 +126,9 @@ class GoalViewModel : ViewModel() {
         private set
     var balance = mutableStateOf(0)
         private set
-    var saveGoalAmount = mutableStateOf(0)
-
 
     fun setGoalAmount(amount: Int) {
         goalAmount.value = amount
-        saveGoalAmount.value = amount
     }
 
     fun getGoalAmount(): Int = goalAmount.value
@@ -141,14 +147,11 @@ class GoalViewModel : ViewModel() {
         checkUnlockCondition()
     }
 
-
     private fun checkUnlockCondition() {
         if (currentAmount.value >= goalAmount.value) {
             isLocked.value = false // 達標時自動解鎖
         }
     }
-
-
 }
 
 @Composable
@@ -261,91 +264,122 @@ fun AccountingAssistant(
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Button(
-                        onClick = { navController.navigate("allRecord") },
-                        modifier = Modifier
-                            .size(170.dp)
-                            .padding(top = 16.dp),
-                        shape = CutCornerShape(10),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF00C851))
-                    ) {
-                        /*Image(
-                            painter = painterResource(id = R.drawable.expensive),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(100.dp)
-                                .padding(8.dp),
-                            contentScale = ContentScale.Fit
-                        )*/
-                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "收入",
-                        fontSize = 22.sp
-                    )
+
                 }
 
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Button(
-                        onClick = { navController.navigate("setGoal") },
-                        modifier = Modifier
-                            .size(170.dp)
-                            .padding(top = 16.dp),
-                        shape = CutCornerShape(10),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFF4444))
-                    ) {
-                        /*Image(
-                            painter = painterResource(id = R.drawable.spending),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(100.dp)
-                                .padding(8.dp),
-                            contentScale = ContentScale.Fit
-                        )*/
-                    }
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "支出",
-                        fontSize = 22.sp
-                    )
+
                 }
             }
         }
     }
-
-
-
-
-
     Spacer(modifier = Modifier.height(10.dp))
-
-
 
     Column(
         modifier = modifier
-            .padding(16.dp),
+            .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Bottom
     )
     {
-
-
-        //Spacer(modifier = Modifier.height(50.dp))
-        Button(
-            onClick = { navController.navigate("deletedataPage") },
+        Box(
             modifier = Modifier
-                .size(width = 300.dp, height = 100.dp)
-                .padding(bottom = 16.dp),
+                .fillMaxWidth()
+                .height(100.dp)
+                .background(color = Color(0xFFA0C1D1)),
+                //.padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                    //.padding(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = { navController.navigate("deletedataPage") },
+                    modifier = Modifier
+                        .size(width = 130.dp, height = 100.dp),
+                    shape = CutCornerShape(10),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFA0C1D1))
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.delete),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(60.dp)
+                                .padding(4.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text("刪除紀錄", fontSize = 14.sp, color = Color.Black)
+                    }
+                }
 
-            shape = CutCornerShape(10),
-            colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
+                VerticalDivider(color = Color.Black, thickness = 3.dp)
 
-        )
-        {
-            Text("刪除紀錄", fontSize = 25.sp)
+                Button(
+                    onClick = { navController.navigate("allRecord") },
+                    modifier = Modifier
+                        .size(width = 130.dp, height = 100.dp),
+                    shape = CutCornerShape(10),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFA0C1D1))
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.folder1),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(60.dp)
+                                .padding(4.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text("所有紀錄", fontSize = 14.sp, color = Color.Black)
+                    }
+                }
+
+                VerticalDivider(color = Color.Black, thickness = 3.dp)
+
+                Button(
+                    onClick = { navController.navigate("setGoal") },
+                    modifier = Modifier
+                        .size(width = 130.dp, height = 100.dp),
+                    shape = CutCornerShape(10),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFA0C1D1))
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.target),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(60.dp)
+                                .padding(4.dp),
+                            contentScale = ContentScale.Fit
+                        )
+                        Spacer(modifier = Modifier.height(5.dp))
+                        Text("目標設定", fontSize = 14.sp, color = Color.Black)
+                    }
+                }
+            }
         }
     }
 
@@ -1396,185 +1430,182 @@ fun SetGoal(
     val isLocked = goalViewModel.isLocked.value
     var goalAmount by remember { mutableStateOf("") }
     val goalAmountInt = goalAmount.toIntOrNull() ?: 0
-    var savedGoalAmount by remember { mutableStateOf(0) }
 
-    Box {
-        Column(
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { contentPadding ->
+        Box(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(contentPadding)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(color = Color(0xFF8AA8A1))
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "目標設定",
-                    fontSize = 24.sp,
-                    color = Color.White
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                    .fillMaxSize()
             ) {
-                TextField(
-                    value = goalAmount,
-                    onValueChange = { newValue ->
-                        if (!isLocked && newValue.all { it.isDigit() }) goalAmount = newValue
-                    },
-                    enabled = !isLocked,
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("金額") }
-                )
-
-                if (showDialog) {
-                    EnterCheckDialog(
-                        checkText = "確定輸入此目標金額?",
-                        checkTitle = "",
-                        onConfirmation = {
-
-                            val amount = goalAmount.toIntOrNull() ?: 0
-                            goalViewModel.setGoalAmount(amount)
-                            savedGoalAmount = amount
-                            goalAmount = ""
-
-                            showDialog = false
-                        },
-                        onDismissRequest = {
-
-                            showDialog = false
-                        }
-                    )
-                }
-
-
-
-                Button(
-
-                    onClick = {
-                        if (!isLocked) {
-                            showDialog = true
-                        }
-                    },
-                    enabled = !isLocked,
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
-                        .size(width = 350.dp, height = 70.dp),
-                    shape = CutCornerShape(10),
-                    colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
+                        .background(color = Color(0xFF8AA8A1))
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "儲存目標金額",
-                        fontSize = 25.sp,
+                        text = "目標設定",
+                        fontSize = 24.sp,
                         color = Color.White
                     )
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                if (showLockDialog) {
-                    EnterCheckDialog(
-                        checkText = "鎖定後將無法變更目標金額，直至您達成目標金額，確認鎖定?",
-                        checkTitle = "最終確認",
-                        onConfirmation = {
-
-                            goalViewModel.lockGoal()
-
-                            showLockDialog = false
-                        },
-                        onDismissRequest = {
-
-                            showLockDialog = false
-                        }
-                    )
-                }
-
-                if (showErrorDialog) {
-                    EnterCheckDialog(
-                        checkText = "無法鎖定! 您的餘額大於所設定的目標金額",
-                        checkTitle = "錯誤",
-                        onConfirmation = {
-                            showErrorDialog = false
-                        },
-                        onDismissRequest = {
-                            showErrorDialog = false
-                        }
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        if (balance > goalAmountInt) {
-                            showErrorDialog = true
-                        }
-                        else if(!isLocked){
-                            showLockDialog = true
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .size(width = 350.dp, height = 70.dp),
-                    shape = CutCornerShape(10),
-                    colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
-                ) {
-                    Text(
-                        "鎖定",
-                        fontSize = 25.sp,
-                        color = Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = { navController.popBackStack() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .size(width = 350.dp, height = 70.dp),
-                    shape = CutCornerShape(10),
-                    colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
-                ) {
-                    Text(
-                        "返回",
-                        fontSize = 25.sp,
-                        color = Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(20.dp))
                 Column(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                    Text(
-                        text = "目前設定的目標金額:" + savedGoalAmount,
-                        fontSize = 25.sp,
-                        color = Color.Black
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    TextField(
+                        value = goalAmount,
+                        onValueChange = { newValue ->
+                            if (!isLocked && newValue.all { it.isDigit() }) goalAmount = newValue
+                        },
+                        enabled = !isLocked,
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("金額") }
                     )
-                    
-                    if (isLocked) {
-                        Text(
-                            "已鎖定",
-                            fontSize = 25.sp,
-                            color = Color.Red
+
+                    if (showDialog) {
+                        EnterCheckDialog(
+                            checkText = "確定輸入此目標金額?",
+                            checkTitle = "",
+                            onConfirmation = {
+                                val amount = goalAmount.toIntOrNull() ?: 0
+                                goalViewModel.setGoalAmount(amount)
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("目標金額已設定")
+                                }
+                                goalAmount = ""
+
+                                showDialog = false
+                            },
+                            onDismissRequest = {
+                                showDialog = false
+                            }
                         )
                     }
+
+                    Spacer(modifier = Modifier.height(60.dp))
+                    Column(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Bottom,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        if (isLocked) {
+                            Text(
+                                "已鎖定",
+                                fontSize = 25.sp,
+                                color = Color.Red
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(30.dp))
+
+                        Button(
+                            onClick = {
+                                if (!isLocked) {
+                                    showDialog = true
+                                }
+                            },
+                            enabled = !isLocked,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .size(width = 350.dp, height = 70.dp),
+                            shape = CutCornerShape(10),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
+                        ) {
+                            Text(
+                                "儲存目標金額",
+                                fontSize = 25.sp,
+                                color = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        if (showLockDialog) {
+                            EnterCheckDialog(
+                                checkText = "鎖定後將無法變更目標金額，直至您達成目標金額，確認鎖定?",
+                                checkTitle = "最終確認",
+                                onConfirmation = {
+                                    goalViewModel.lockGoal()
+                                    showLockDialog = false
+                                },
+                                onDismissRequest = {
+                                    showLockDialog = false
+                                }
+                            )
+                        }
+
+                        if (showErrorDialog) {
+                            EnterCheckDialog(
+                                checkText = "無法鎖定! 您的餘額大於所設定的目標金額",
+                                checkTitle = "錯誤",
+                                onConfirmation = {
+                                    showErrorDialog = false
+                                },
+                                onDismissRequest = {
+                                    showErrorDialog = false
+                                }
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                if (balance > goalAmountInt) {
+                                    showErrorDialog = true
+                                } else if (!isLocked) {
+                                    showLockDialog = true
+                                }
+                            },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .size(width = 350.dp, height = 70.dp),
+                            shape = CutCornerShape(10),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
+                        ) {
+                            Text(
+                                "鎖定",
+                                fontSize = 25.sp,
+                                color = Color.White
+                            )
+                        }
+
+                        Spacer(modifier = Modifier.height(5.dp))
+
+                        Button(
+                            onClick = { navController.popBackStack() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .size(width = 350.dp, height = 70.dp),
+                            shape = CutCornerShape(10),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
+                        ) {
+                            Text(
+                                "返回",
+                                fontSize = 25.sp,
+                                color = Color.White
+                            )
+                        }
+                    }
                 }
-
             }
-
-
         }
     }
 }
