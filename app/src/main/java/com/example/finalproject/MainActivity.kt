@@ -65,6 +65,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.foundation.Image
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 
@@ -108,16 +109,46 @@ class ExpenseViewModel : ViewModel() {
     }
 }
 
-class GoalViewModel : ViewModel(){
+class GoalViewModel : ViewModel() {
     var goalAmount = mutableStateOf(0)
+    var isLocked = mutableStateOf(false)
+        private set
+    var currentAmount = mutableStateOf(0)
+        private set
+    var balance = mutableStateOf(0)
+        private set
+    var saveGoalAmount = mutableStateOf(0)
+
 
     fun setGoalAmount(amount: Int) {
         goalAmount.value = amount
+        saveGoalAmount.value = amount
     }
 
-    fun getGoalAmount(): Int {
-        return goalAmount.value
+    fun getGoalAmount(): Int = goalAmount.value
+
+    fun lockGoal() {
+        isLocked.value = true
     }
+
+    fun toggleLock() {
+        isLocked.value = !isLocked.value
+    }
+
+    fun updateCurrentAmount(totalIncome: Int, totalExpense: Int) {
+        balance.value = totalIncome - totalExpense
+        currentAmount.value = balance.value
+        checkUnlockCondition()
+    }
+
+
+    private fun checkUnlockCondition() {
+        if (currentAmount.value >= goalAmount.value) {
+            isLocked.value = false // 達標時自動解鎖
+        }
+    }
+
+
 }
 
 @Composable
@@ -259,7 +290,7 @@ fun AccountingAssistant(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Button(
-                        onClick = { navController.navigate("setGoal")},
+                        onClick = { navController.navigate("setGoal") },
                         modifier = Modifier
                             .size(170.dp)
                             .padding(top = 16.dp),
@@ -300,8 +331,6 @@ fun AccountingAssistant(
         verticalArrangement = Arrangement.Bottom
     )
     {
-
-
 
 
         //Spacer(modifier = Modifier.height(50.dp))
@@ -521,6 +550,7 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
             if (showDialog) {
                 EnterCheckDialog(
                     checkText = "確定輸入此金額與備註事項?",
+                    checkTitle = "",
                     onConfirmation = {
                         incomeViewModel.addIncome(incomeAmount, incomeNote)
                         incomeAmount = ""
@@ -689,7 +719,7 @@ fun ExpenseList(expenseData: List<Pair<String, String>>) {
 
                 Text(
                     modifier = Modifier
-                    .weight(1f),
+                        .weight(1f),
                     text = item.first,
                     fontSize = 20.sp,
 
@@ -698,7 +728,7 @@ fun ExpenseList(expenseData: List<Pair<String, String>>) {
 
                 Text(
                     modifier = Modifier
-                       .weight(1f),
+                        .weight(1f),
                     text = item.second,
                     fontSize = 20.sp,
 
@@ -786,6 +816,7 @@ fun ExpenseFunction(
             if (showDialog) {
                 EnterCheckDialog(
                     checkText = "確定輸入此金額與備註事項?",
+                    checkTitle = "",
                     onConfirmation = {
                         expenseViewModel.addExpense(expenseAmount, expenseNote)
                         expenseAmount = ""
@@ -845,18 +876,17 @@ fun BalanceDisplay(totalIncome: Int, totalExpense: Int, totalGoal: Int) {
     val balance = totalIncome - totalExpense
     val goal = totalGoal - balance
 
-    val TextDisplay = if(totalGoal == 0){
+    val TextDisplay = if (totalGoal == 0) {
         "未設定目標金額"
-    } else if(balance < totalGoal) {
+    } else if (balance < totalGoal) {
         "距離目標金額: NT\$ $goal"
-    }
-    else{
+    } else {
         "已達標"
     }
 
-    val TextDisplay2 = if(totalGoal == 0){
+    val TextDisplay2 = if (totalGoal == 0) {
         "當前設定目標金額: 未設定"
-    } else{
+    } else {
         "當前設定目標金額: NT\$ $totalGoal"
     }
 
@@ -878,8 +908,8 @@ fun BalanceDisplay(totalIncome: Int, totalExpense: Int, totalGoal: Int) {
     Spacer(modifier = Modifier.height(16.dp))
 
     Text(
-            text = TextDisplay,
-            fontSize = 24.sp
+        text = TextDisplay,
+        fontSize = 24.sp
     )
 
 
@@ -946,7 +976,7 @@ fun DeleteDataPage(
 
             }
 
-            Column(){
+            Column() {
                 HorizontalDivider(thickness = 2.dp, color = Color.Black)
             }
 
@@ -999,7 +1029,7 @@ fun DeleteDataPage(
                 }
             }
 
-            Column(){
+            Column() {
                 HorizontalDivider(thickness = 2.dp, color = Color.Black)
             }
 
@@ -1018,7 +1048,7 @@ fun DeleteDataPage(
 
             }
 
-            Column(){
+            Column() {
                 HorizontalDivider(thickness = 2.dp, color = Color.Black)
             }
 
@@ -1087,6 +1117,7 @@ fun DeleteDataPage(
             if (showDialog) {
                 EnterCheckDialog(
                     checkText = "確定刪除所勾選的項目?",
+                    checkTitle = "",
                     onConfirmation = {
                         // 使用mutableStateListOf來保證與Compose狀態同步
                         val updatedIncomeList = incomeViewModel.incomeList.toMutableStateList()
@@ -1157,9 +1188,20 @@ fun DeleteDataPage(
 }
 
 @Composable
-fun EnterCheckDialog(onConfirmation: () -> Unit, onDismissRequest: () -> Unit, checkText: String) {
+fun EnterCheckDialog(
+    onConfirmation: () -> Unit,
+    onDismissRequest: () -> Unit,
+    checkText: String,
+    checkTitle: String
+) {
     AlertDialog(
-        text = { Text(text = checkText) },
+        title = {
+            Text(text = checkTitle)
+        },
+        text = {
+            Text(text = checkText)
+        },
+
 
         onDismissRequest = { onDismissRequest() },
         confirmButton = {
@@ -1226,7 +1268,7 @@ fun AllRecord(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                //.padding(16.dp)
+            //.padding(16.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -1306,34 +1348,55 @@ fun AllRecord(
         }
 
 
-            Column(
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+        ) {
+            Button(
+                onClick = { navController.popBackStack() },
                 modifier = Modifier
-                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .size(width = 350.dp, height = 70.dp),
+                shape = CutCornerShape(10),
+                colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
             ) {
-                Button(
-                    onClick = { navController.popBackStack() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .size(width = 350.dp, height = 70.dp),
-                    shape = CutCornerShape(10),
-                    colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
-                ) {
-                    Text(
-                        "返回",
-                        fontSize = 25.sp,
-                        color = Color.White
-                    )
-                }
+                Text(
+                    "返回",
+                    fontSize = 25.sp,
+                    color = Color.White
+                )
             }
+        }
 
     }
 }
 
 @Composable
-fun SetGoal(navController: NavController,goalViewModel: GoalViewModel = viewModel()) {
+fun SetGoal(
+    navController: NavController,
+    incomeViewModel: IncomeViewModel = viewModel(),
+    expenseViewModel: ExpenseViewModel = viewModel(),
+    goalViewModel: GoalViewModel = viewModel()
+) {
 
+    //var goalAmount by remember { mutableStateOf("") }
+    val totalIncome = incomeViewModel.getTotalIncome()
+    val totalExpense = expenseViewModel.getTotalExpense()
+    val balance = totalIncome - totalExpense
+    var showDialog by remember { mutableStateOf(false) }
+    var showLockDialog by remember { mutableStateOf(false) }
+    var showErrorDialog by remember { mutableStateOf(false) }
+
+    // 更新餘額到 GoalViewModel 並檢查是否達標
+    LaunchedEffect(balance) {
+        goalViewModel.updateCurrentAmount(totalIncome, totalExpense)
+    }
+
+    val isLocked = goalViewModel.isLocked.value
     var goalAmount by remember { mutableStateOf("") }
+    val goalAmountInt = goalAmount.toIntOrNull() ?: 0
+    var savedGoalAmount by remember { mutableStateOf(0) }
 
     Box {
         Column(
@@ -1364,21 +1427,43 @@ fun SetGoal(navController: NavController,goalViewModel: GoalViewModel = viewMode
                 TextField(
                     value = goalAmount,
                     onValueChange = { newValue ->
-                        if (newValue.all { it.isDigit() }) goalAmount = newValue
+                        if (!isLocked && newValue.all { it.isDigit() }) goalAmount = newValue
                     },
+                    enabled = !isLocked,
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("金額") }
                 )
 
+                if (showDialog) {
+                    EnterCheckDialog(
+                        checkText = "確定輸入此目標金額?",
+                        checkTitle = "",
+                        onConfirmation = {
+
+                            val amount = goalAmount.toIntOrNull() ?: 0
+                            goalViewModel.setGoalAmount(amount)
+                            savedGoalAmount = amount
+                            goalAmount = ""
+
+                            showDialog = false
+                        },
+                        onDismissRequest = {
+
+                            showDialog = false
+                        }
+                    )
+                }
+
 
 
                 Button(
-                    onClick = {
-                        val amount = goalAmount.toIntOrNull() ?: 0
-                        goalViewModel.setGoalAmount(amount)
 
-                        navController.popBackStack()
+                    onClick = {
+                        if (!isLocked) {
+                            showDialog = true
+                        }
                     },
+                    enabled = !isLocked,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
@@ -1392,7 +1477,64 @@ fun SetGoal(navController: NavController,goalViewModel: GoalViewModel = viewMode
                         color = Color.White
                     )
                 }
+
                 Spacer(modifier = Modifier.height(16.dp))
+
+                if (showLockDialog) {
+                    EnterCheckDialog(
+                        checkText = "鎖定後將無法變更目標金額，直至您達成目標金額，確認鎖定?",
+                        checkTitle = "最終確認",
+                        onConfirmation = {
+
+                            goalViewModel.lockGoal()
+
+                            showLockDialog = false
+                        },
+                        onDismissRequest = {
+
+                            showLockDialog = false
+                        }
+                    )
+                }
+
+                if (showErrorDialog) {
+                    EnterCheckDialog(
+                        checkText = "無法鎖定! 您的餘額大於所設定的目標金額",
+                        checkTitle = "錯誤",
+                        onConfirmation = {
+                            showErrorDialog = false
+                        },
+                        onDismissRequest = {
+                            showErrorDialog = false
+                        }
+                    )
+                }
+
+                Button(
+                    onClick = {
+                        if (balance > goalAmountInt) {
+                            showErrorDialog = true
+                        }
+                        else if(!isLocked){
+                            showLockDialog = true
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .size(width = 350.dp, height = 70.dp),
+                    shape = CutCornerShape(10),
+                    colors = ButtonDefaults.buttonColors(Color(0xFF0099CC))
+                ) {
+                    Text(
+                        "鎖定",
+                        fontSize = 25.sp,
+                        color = Color.White
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Button(
                     onClick = { navController.popBackStack() },
                     modifier = Modifier
@@ -1408,58 +1550,86 @@ fun SetGoal(navController: NavController,goalViewModel: GoalViewModel = viewMode
                         color = Color.White
                     )
                 }
+
+                Spacer(modifier = Modifier.height(20.dp))
+                Column(
+                    modifier = Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                    Text(
+                        text = "目前設定的目標金額:" + savedGoalAmount,
+                        fontSize = 25.sp,
+                        color = Color.Black
+                    )
+                    
+                    if (isLocked) {
+                        Text(
+                            "已鎖定",
+                            fontSize = 25.sp,
+                            color = Color.Red
+                        )
+                    }
+                }
+
             }
+
+
         }
     }
 }
 
-    @Composable
-    fun AppNavigation() {
-        val navController = rememberNavController()
-        val incomeViewModel = IncomeViewModel()
-        val expenseViewModel = ExpenseViewModel()
-        val goalViewModel = GoalViewModel()
+@Composable
+fun AppNavigation() {
+    val navController = rememberNavController()
+    val incomeViewModel = IncomeViewModel()
+    val expenseViewModel = ExpenseViewModel()
+    val goalViewModel = GoalViewModel()
 
-        NavHost(navController = navController, startDestination = "home") {
-            // 主頁面
-            composable("home") {
-                AccountingAssistant(
-                    navController,
-                    incomeViewModel = incomeViewModel,
-                    expenseViewModel = expenseViewModel,
-                    goalViewModel = goalViewModel
-                )
-            }
-            // 收入頁面
-            composable("incomePage") {
-                IncomePage(navController, incomeViewModel)
-            }
-            //支出
-            composable("expensePage") {
-                ExpensePage(navController, expenseViewModel)
-            }
-            composable("incomeFunction") {
-                IncomeFunction(navController, incomeViewModel)
-            }
-            composable("expenseFunction") {
-                ExpenseFunction(navController, expenseViewModel)
-            }
-            composable("deletedataPage") {
-                DeleteDataPage(
-                    navController,
-                    incomeViewModel = incomeViewModel,
-                    expenseViewModel = expenseViewModel
-                )
-            }
-            composable("allRecord") {
-                AllRecord(navController, incomeViewModel,expenseViewModel)
-            }
-            composable("setGoal") {
-                SetGoal(navController, goalViewModel)
-            }
+    NavHost(navController = navController, startDestination = "home") {
+        // 主頁面
+        composable("home") {
+            AccountingAssistant(
+                navController,
+                incomeViewModel = incomeViewModel,
+                expenseViewModel = expenseViewModel,
+                goalViewModel = goalViewModel
+            )
+        }
+        // 收入頁面
+        composable("incomePage") {
+            IncomePage(navController, incomeViewModel)
+        }
+        //支出
+        composable("expensePage") {
+            ExpensePage(navController, expenseViewModel)
+        }
+        composable("incomeFunction") {
+            IncomeFunction(navController, incomeViewModel)
+        }
+        composable("expenseFunction") {
+            ExpenseFunction(navController, expenseViewModel)
+        }
+        composable("deletedataPage") {
+            DeleteDataPage(
+                navController,
+                incomeViewModel = incomeViewModel,
+                expenseViewModel = expenseViewModel
+            )
+        }
+        composable("allRecord") {
+            AllRecord(navController, incomeViewModel, expenseViewModel)
+        }
+        composable("setGoal") {
+            SetGoal(
+                navController = navController,
+                goalViewModel = goalViewModel,
+                incomeViewModel = incomeViewModel,
+                expenseViewModel = expenseViewModel
+            )
         }
     }
-
+}
 
 
 @Preview(showBackground = true)
