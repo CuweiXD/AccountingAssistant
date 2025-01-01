@@ -1771,7 +1771,7 @@ fun SetGoal(
                         if (showInfoDialog) {
                             InfoCheckDialog(
                                 checkText = "此功能可設定所想要達成的目標金額，您也可以使用鎖定功能(下方註解)來限制修改金額",
-                                checkText2 = "*鎖定:使用時，將會鎖住金額輸入欄位及鎖定按鈕，直至達成所設定的金額目標為準",
+                                checkText2 = "*鎖定:使用時，將會鎖住金額輸入欄位及鎖定按鈕，直至達成所設定的金額目標為止",
                                 checkTitle = "資訊Info",
                                 onConfirmation = {
                                     showInfoDialog = false
