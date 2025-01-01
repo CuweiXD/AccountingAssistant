@@ -151,9 +151,13 @@ class GoalViewModel : ViewModel() {
     private fun checkUnlockCondition() {
         if (currentAmount.value >= goalAmount.value) {
             isLocked.value = false // 達標時自動解鎖
+            goalAmount.value = 0
         }
     }
 }
+
+
+
 
 @Composable
 fun AccountingAssistant(
@@ -185,7 +189,8 @@ fun AccountingAssistant(
             TextCard(
                 totalIncome = totalIncome,
                 totalExpense = totalExpense,
-                totalGoal = totalGoal
+                totalGoal = totalGoal,
+                navController = navController
             )
 
             Spacer(modifier = Modifier.height(20.dp))
@@ -295,13 +300,13 @@ fun AccountingAssistant(
                 .fillMaxWidth()
                 .height(100.dp)
                 .background(color = Color(0xFFA0C1D1)),
-                //.padding(16.dp),
+            //.padding(16.dp),
             contentAlignment = Alignment.Center
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                    //.padding(horizontal = 16.dp),
+                //.padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -907,7 +912,7 @@ fun ExpenseFunction(
 }
 
 @Composable
-fun BalanceDisplay(totalIncome: Int, totalExpense: Int, totalGoal: Int) {
+fun BalanceDisplay(totalIncome: Int, totalExpense: Int, totalGoal: Int, navController: NavController) {
     val balance = totalIncome - totalExpense
     val goal = totalGoal - balance
 
@@ -927,9 +932,10 @@ fun BalanceDisplay(totalIncome: Int, totalExpense: Int, totalGoal: Int) {
 
 
 
+
     Text(
         text = "餘額: NT\$ $balance",
-        fontSize = 24.sp,
+        fontSize = 26.sp,
         color = if (balance > 0) {
             Color.Black
         } else if (balance < 0) {
@@ -1291,8 +1297,9 @@ fun InfoCheckDialog(
     )
 }
 
+
 @Composable
-fun TextCard(totalIncome: Int, totalExpense: Int, totalGoal: Int) {
+fun TextCard(totalIncome: Int, totalExpense: Int, totalGoal: Int, navController : NavController ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = Color(0xFFE9D758),
@@ -1309,7 +1316,8 @@ fun TextCard(totalIncome: Int, totalExpense: Int, totalGoal: Int) {
             BalanceDisplay(
                 totalIncome = totalIncome,
                 totalExpense = totalExpense,
-                totalGoal = totalGoal
+                totalGoal = totalGoal,
+                navController = navController
             )
         }
 
@@ -1444,8 +1452,6 @@ fun SetGoal(
     expenseViewModel: ExpenseViewModel = viewModel(),
     goalViewModel: GoalViewModel = viewModel()
 ) {
-
-    //var goalAmount by remember { mutableStateOf("") }
     val totalIncome = incomeViewModel.getTotalIncome()
     val totalExpense = expenseViewModel.getTotalExpense()
     val balance = totalIncome - totalExpense
@@ -1460,8 +1466,11 @@ fun SetGoal(
     }
 
     val isLocked = goalViewModel.isLocked.value
-    var goalAmount by remember { mutableStateOf("") }
-    val goalAmountInt = goalAmount.toIntOrNull() ?: 0
+    val goalAmount = goalViewModel.goalAmount.value.toString()
+    val goalAmountInt = goalViewModel.goalAmount.value
+
+    // 這裡將 goalAmountTemp 初始化為空字串，並且它用來綁定 TextField
+    var goalAmountTemp by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -1476,12 +1485,7 @@ fun SetGoal(
                 .fillMaxSize()
                 .padding(contentPadding)
         ) {
-
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-            ) {
+            Column(modifier = Modifier.fillMaxSize()) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1491,10 +1495,8 @@ fun SetGoal(
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        //horizontalArrangement = Arrangement.SpaceBetween
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-
                         Spacer(modifier = Modifier.weight(1f))
                         Text(
                             text = "目標設定",
@@ -1508,7 +1510,6 @@ fun SetGoal(
                                 checkText = "可以設定目標金額",
                                 checkTitle = "資訊Info",
                                 onConfirmation = {
-
                                     showInfoDialog = false
                                 },
                                 onDismissRequest = {
@@ -1539,27 +1540,33 @@ fun SetGoal(
                         .padding(16.dp)
                 ) {
                     TextField(
-                        value = goalAmount,
+                        value = goalAmountTemp,  // 綁定到 goalAmountTemp，這樣 TextField 顯示的是空字串或用戶輸入的值
                         onValueChange = { newValue ->
-                            if (!isLocked && newValue.all { it.isDigit() }) goalAmount = newValue
+                            if (!isLocked && newValue.all { it.isDigit() }) {
+                                goalAmountTemp = newValue // 更新 goalAmountTemp
+                            }
                         },
                         enabled = !isLocked,
                         modifier = Modifier.fillMaxWidth(),
                         placeholder = { Text("金額") }
                     )
 
+                    /*   //檢查用
+                    Text(text = "goalAmount: $goalAmount", fontSize = 18.sp, color = Color.Black)
+                    val goalAmountInt = goalAmount.toIntOrNull() ?: 0
+                    Text(text = "goalAmountInt: $goalAmountInt", fontSize = 18.sp, color = Color.Black)
+                    Text(text = "balance: $balance", fontSize = 18.sp, color = Color.Black)*/
+
                     if (showDialog) {
                         EnterCheckDialog(
                             checkText = "確定輸入此目標金額?",
                             checkTitle = "",
                             onConfirmation = {
-                                val amount = goalAmount.toIntOrNull() ?: 0
-                                goalViewModel.setGoalAmount(amount)
+                                goalViewModel.setGoalAmount(goalAmountTemp.toIntOrNull() ?: 0) // 儲存目標金額
                                 scope.launch {
                                     snackbarHostState.showSnackbar("目標金額已設定")
                                 }
-                                goalAmount = ""
-
+                                goalAmountTemp = "" //儲存後清空 TextField
                                 showDialog = false
                             },
                             onDismissRequest = {
@@ -1569,25 +1576,42 @@ fun SetGoal(
                     }
 
                     Spacer(modifier = Modifier.height(60.dp))
+
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         verticalArrangement = Arrangement.Bottom,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+
+                        Text(
+                            text = "當前設定目標金額: $goalAmountInt",
+                            fontSize = 25.sp,
+                            color = Color.Black
+                        )
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
                         if (isLocked) {
                             Text(
                                 "已鎖定",
                                 fontSize = 25.sp,
                                 color = Color.Red
                             )
+
                         }
                         Spacer(modifier = Modifier.height(30.dp))
 
                         Button(
                             onClick = {
-                                if (!isLocked) {
-                                    showDialog = true
+                                val amount = goalAmountTemp.toIntOrNull() ?: 0
+                                if (amount > 0) {
+                                    goalViewModel.setGoalAmount(amount)
+                                    scope.launch {
+                                        snackbarHostState.showSnackbar("目標金額已設定")
+                                    }
+                                    goalAmountTemp = ""
                                 }
+                                showDialog = false
                             },
                             enabled = !isLocked,
                             modifier = Modifier
@@ -1622,7 +1646,7 @@ fun SetGoal(
 
                         if (showErrorDialog) {
                             EnterCheckDialog(
-                                checkText = "無法鎖定! 您的餘額大於所設定的目標金額",
+                                checkText = "無法鎖定! 您的餘額大於或等於所設定的目標金額",
                                 checkTitle = "錯誤",
                                 onConfirmation = {
                                     showErrorDialog = false
@@ -1633,9 +1657,12 @@ fun SetGoal(
                             )
                         }
 
+
                         Button(
                             onClick = {
-                                if (balance > goalAmountInt) {
+                                val goalAmountInt = goalAmount.toIntOrNull() ?: 0
+
+                                if (balance >= goalAmountInt) {
                                     showErrorDialog = true
                                 } else if (!isLocked) {
                                     showLockDialog = true
@@ -1681,6 +1708,11 @@ fun SetGoal(
 
 
 
+
+
+
+
+
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -1695,7 +1727,7 @@ fun AppNavigation() {
                 navController,
                 incomeViewModel = incomeViewModel,
                 expenseViewModel = expenseViewModel,
-                goalViewModel = goalViewModel
+                goalViewModel = goalViewModel,
             )
         }
         // 收入頁面
