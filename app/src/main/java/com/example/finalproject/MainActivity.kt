@@ -76,6 +76,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.filled.Add
 
 
@@ -1261,6 +1262,36 @@ fun EnterCheckDialog(
 }
 
 @Composable
+fun InfoCheckDialog(
+    onConfirmation: () -> Unit,
+    onDismissRequest: () -> Unit,
+    checkText: String,
+    checkTitle: String
+) {
+    AlertDialog(
+        title = {
+            Text(text = checkTitle)
+        },
+        text = {
+            Text(text = checkText)
+        },
+
+
+        onDismissRequest = { onDismissRequest() },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+
+                }
+            ) {
+                Text("確認")
+            }
+        },
+    )
+}
+
+@Composable
 fun TextCard(totalIncome: Int, totalExpense: Int, totalGoal: Int) {
     Card(
         colors = CardDefaults.cardColors(
@@ -1421,6 +1452,7 @@ fun SetGoal(
     var showDialog by remember { mutableStateOf(false) }
     var showLockDialog by remember { mutableStateOf(false) }
     var showErrorDialog by remember { mutableStateOf(false) }
+    var showInfoDialog by remember { mutableStateOf(false) }
 
     // 更新餘額到 GoalViewModel 並檢查是否達標
     LaunchedEffect(balance) {
@@ -1444,6 +1476,8 @@ fun SetGoal(
                 .fillMaxSize()
                 .padding(contentPadding)
         ) {
+
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -1455,11 +1489,46 @@ fun SetGoal(
                         .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Text(
-                        text = "目標設定",
-                        fontSize = 24.sp,
-                        color = Color.White
-                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        //horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(
+                            text = "目標設定",
+                            fontSize = 24.sp,
+                            color = Color.White
+                        )
+                        Spacer(modifier = Modifier.weight(0.7f))
+
+                        if (showInfoDialog) {
+                            InfoCheckDialog(
+                                checkText = "可以設定目標金額",
+                                checkTitle = "資訊Info",
+                                onConfirmation = {
+
+                                    showInfoDialog = false
+                                },
+                                onDismissRequest = {
+                                    showInfoDialog = false
+                                }
+                            )
+                        }
+
+                        TextButton(
+                            onClick = { showInfoDialog = true },
+                            modifier = Modifier.size(60.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.question),
+                                contentDescription = "Custom Image Button",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -1609,6 +1678,8 @@ fun SetGoal(
         }
     }
 }
+
+
 
 @Composable
 fun AppNavigation() {
