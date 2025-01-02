@@ -4,6 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.with
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -78,6 +84,16 @@ import kotlinx.coroutines.launch
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.filled.Add
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.rememberNavController
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.navigation.compose.composable
+
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+
+
 
 
 class MainActivity : ComponentActivity() {
@@ -380,56 +396,60 @@ fun AccountingAssistant(
 }
 
 
-
 @Composable
 fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = viewModel()) {
     var incomeAmount by remember { mutableStateOf("") }
     var incomeNote by remember { mutableStateOf("") }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
+
+    Column( modifier = Modifier
+        .background(color = Color(0xFFE8F7FF))
     ) {
-        //收入按鈕
         Column(
-            horizontalAlignment = Alignment.Start
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = { navController.navigate("incomeFunction") },
-                modifier = Modifier
-                    .size(width = 400.dp, height = 150.dp)
-                    .padding(end = 8.dp, top = 16.dp),
-                shape = CutCornerShape(10),
-                colors = ButtonDefaults.buttonColors(Color(0xFF00C851))
+            //收入按鈕
+            Column(
+                horizontalAlignment = Alignment.Start
             ) {
-                Row(
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = { navController.navigate("incomeFunction") },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween, // 左右對齊
-                    verticalAlignment = Alignment.CenterVertically // 垂直居中
+                        .size(width = 400.dp, height = 150.dp)
+                        .padding(end = 8.dp, top = 16.dp),
+                    shape = CutCornerShape(10),
+                    colors = ButtonDefaults.buttonColors(Color(0xFF00C851))
                 ) {
-                    Text(
-                        "目前收入",
-                        fontSize = 25.sp
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween, // 左右對齊
+                        verticalAlignment = Alignment.CenterVertically // 垂直居中
+                    ) {
+                        Text(
+                            "目前收入",
+                            fontSize = 25.sp
+                        )
 
 
-                    Text(
-                        "NT\$ ${incomeViewModel.getTotalIncome()}",
-                        fontSize = 25.sp
-                    )
+                        Text(
+                            "NT\$ ${incomeViewModel.getTotalIncome()}",
+                            fontSize = 25.sp
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(30.dp))
+                IncomeList(incomeData = incomeViewModel.incomeList)
             }
-            Spacer(modifier = Modifier.height(30.dp))
-            IncomeList(incomeData = incomeViewModel.incomeList)
+
+            Spacer(modifier = Modifier.height(50.dp))
+
         }
-
-        Spacer(modifier = Modifier.height(50.dp))
-
     }
     Column(
         modifier = Modifier
@@ -530,7 +550,7 @@ fun IncomeList(incomeData: List<Pair<String, String>>) {
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
-            thickness= 2.dp,
+            thickness = 2.dp,
             color = Color.Black
         )
 
@@ -572,7 +592,7 @@ fun IncomeList(incomeData: List<Pair<String, String>>) {
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
-            thickness= 2.dp,
+            thickness = 2.dp,
             color = Color.Black
         )
     }
@@ -594,6 +614,7 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(color = Color(0xFFE8F7FF))
 
                 //.padding(25.dp)
                 .align(Alignment.TopCenter),
@@ -615,120 +636,125 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
                 )
             }
 
-            Spacer(modifier = Modifier.height(25.dp))
+
+                Spacer(modifier = Modifier.height(25.dp))
+
+
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                ) {
+                    TextField(
+                        value = incomeAmount,
+                        onValueChange = { newValue ->
+                            if (newValue.all { it.isDigit() }) incomeAmount = newValue
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("金額") }
+                    )
+                    Spacer(modifier = Modifier.height(50.dp))
+                    TextField(
+                        value = incomeNote,
+                        onValueChange = { incomeNote = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("備註事項") }
+                    )
+                }
+
+        }
+
 
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                    .fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Bottom
             ) {
-                TextField(
-                    value = incomeAmount,
-                    onValueChange = { newValue ->
-                        if (newValue.all { it.isDigit() }) incomeAmount = newValue
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("金額") }
-                )
-                Spacer(modifier = Modifier.height(50.dp))
-                TextField(
-                    value = incomeNote,
-                    onValueChange = { incomeNote = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("備註事項") }
-                )
-            }
-        }
-
-        Column(
-            modifier = Modifier
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Bottom
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(100.dp)
-                    .background(color = Color(0xFFA0C1D1)),
-                //.padding(16.dp),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                Row(
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    //.padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly,
-                    verticalAlignment = Alignment.CenterVertically
+                        .fillMaxWidth()
+                        .height(100.dp)
+                        .background(color = Color(0xFFA0C1D1)),
+                    //.padding(16.dp),
+                    contentAlignment = Alignment.BottomCenter
                 ) {
-
-
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth(),
+                        //.padding(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.SpaceEvenly,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        TextButton(
-                            onClick = { navController.popBackStack() },
-                            modifier = Modifier.size(75.dp)
+
+
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.resource_return),
-                                contentDescription = "",
-                                modifier = Modifier
-                                    .fillMaxSize()
+                            TextButton(
+                                onClick = { navController.popBackStack() },
+                                modifier = Modifier.size(75.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.resource_return),
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                )
+                            }
+                            Text(
+                                "返回",
+                                fontSize = 20.sp
                             )
+
                         }
-                        Text(
-                            "返回",
-                            fontSize = 20.sp
-                        )
 
-                    }
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            if (showDialog) {
+                                EnterCheckDialog(
+                                    checkText = "確定輸入此金額與備註事項?",
+                                    checkTitle = "輸入確認",
+                                    onConfirmation = {
+                                        incomeViewModel.addIncome(incomeAmount, incomeNote)
+                                        incomeAmount = ""
+                                        incomeNote = ""
+                                        showDialog = false
+                                    },
+                                    onDismissRequest = {
+                                        showDialog = false
+                                    }
+                                )
+                            }
 
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        if (showDialog) {
-                            EnterCheckDialog(
-                                checkText = "確定輸入此金額與備註事項?",
-                                checkTitle = "輸入確認",
-                                onConfirmation = {
-                                    incomeViewModel.addIncome(incomeAmount, incomeNote)
-                                    incomeAmount = ""
-                                    incomeNote = ""
-                                    showDialog = false
+                            TextButton(
+                                onClick = {
+                                    if (incomeAmount.isNotEmpty()) {
+                                        showDialog = true
+                                    }
                                 },
-                                onDismissRequest = {
-                                    showDialog = false
-                                }
+                                modifier = Modifier.size(75.dp)
+                            ) {
+                                Image(
+                                    painter = painterResource(id = R.drawable.inputdata),
+                                    contentDescription = "",
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                )
+                            }
+                            Text(
+                                "輸入",
+                                fontSize = 20.sp
                             )
-                        }
 
-                        TextButton(
-                            onClick = {
-                                if (incomeAmount.isNotEmpty()) {
-                                    showDialog = true
-                                }
-                            },
-                            modifier = Modifier.size(75.dp)
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.inputdata),
-                                contentDescription = "",
-                                modifier = Modifier
-                                    .fillMaxSize()
-                            )
                         }
-                        Text(
-                            "輸入",
-                            fontSize = 20.sp
-                        )
-
                     }
                 }
             }
-        }
+
     }
 }
 
@@ -739,51 +765,56 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
     var expenseAmount by remember { mutableStateOf("") }
     var expenseNote by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.SpaceBetween
+    Column( modifier = Modifier
+        .background(color = Color(0xFFE8F7FF))
     ) {
-        //收入按鈕
         Column(
-            horizontalAlignment = Alignment.Start
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
-            Button(
-                onClick = { navController.navigate("expenseFunction") },
-                modifier = Modifier
-                    .size(width = 400.dp, height = 150.dp)
-                    .padding(end = 8.dp, top = 16.dp),
-                shape = CutCornerShape(10),
-                colors = ButtonDefaults.buttonColors(Color(0xFFFF4444))
+            //收入按鈕
+            Column(
+                horizontalAlignment = Alignment.Start
             ) {
-                Row(
+                Spacer(modifier = Modifier.height(20.dp))
+                Button(
+                    onClick = { navController.navigate("expenseFunction") },
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween, // 左右對齊
-                    verticalAlignment = Alignment.CenterVertically // 垂直居中
+                        .size(width = 400.dp, height = 150.dp)
+                        .padding(end = 8.dp, top = 16.dp),
+                    shape = CutCornerShape(10),
+                    colors = ButtonDefaults.buttonColors(Color(0xFFFF4444))
                 ) {
-                    Text(
-                        "目前支出",
-                        fontSize = 25.sp
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween, // 左右對齊
+                        verticalAlignment = Alignment.CenterVertically // 垂直居中
+                    ) {
+                        Text(
+                            "目前支出",
+                            fontSize = 25.sp
+                        )
 
 
-                    Text(
-                        "NT\$ ${expenseViewModel.getTotalExpense()}",
-                        fontSize = 25.sp
-                    )
+                        Text(
+                            "NT\$ ${expenseViewModel.getTotalExpense()}",
+                            fontSize = 25.sp
+                        )
+                    }
                 }
+                Spacer(modifier = Modifier.height(30.dp))
+                ExpenseList(expenseData = expenseViewModel.expenseList)
             }
-            Spacer(modifier = Modifier.height(30.dp))
-            ExpenseList(expenseData = expenseViewModel.expenseList)
-        }
 
-        Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(30.dp))
+        }
     }
+
     Column(
         modifier = Modifier
             .fillMaxSize(),
@@ -882,8 +913,8 @@ fun ExpenseList(expenseData: List<Pair<String, String>>) {
 
         HorizontalDivider(
             modifier = Modifier
-            .padding(start = 12.dp, end = 12.dp),
-            thickness= 2.dp,
+                .padding(start = 12.dp, end = 12.dp),
+            thickness = 2.dp,
             color = Color.Black
         )
 
@@ -924,7 +955,7 @@ fun ExpenseList(expenseData: List<Pair<String, String>>) {
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
-            thickness= 2.dp,
+            thickness = 2.dp,
             color = Color.Black
         )
     }
@@ -949,8 +980,7 @@ fun ExpenseFunction(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-
-                //.padding(25.dp)
+                .background(color = Color(0xFFE8F7FF))
                 .align(Alignment.TopCenter),
 
             horizontalAlignment = Alignment.CenterHorizontally
@@ -1163,6 +1193,7 @@ fun DeleteDataPage(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(color = Color(0xFFE8F7FF))
                 //.padding(16.dp),
                 .align(Alignment.TopCenter),
             horizontalAlignment = Alignment.Start,
@@ -1386,18 +1417,24 @@ fun DeleteDataPage(
                                 checkTitle = "刪除確認",
                                 onConfirmation = {
                                     // 使用mutableStateListOf來保證與Compose狀態同步
-                                    val updatedIncomeList = incomeViewModel.incomeList.toMutableStateList()
+                                    val updatedIncomeList =
+                                        incomeViewModel.incomeList.toMutableStateList()
 
                                     // 過濾掉被選中的項目
                                     updatedIncomeList.removeAll { item ->
                                         selectedIncomeItems.contains(updatedIncomeList.indexOf(item))
                                     }
 
-                                    val updatedExpenseList = expenseViewModel.expenseList.toMutableStateList()
+                                    val updatedExpenseList =
+                                        expenseViewModel.expenseList.toMutableStateList()
 
                                     // 過濾掉被選中的項目
                                     updatedExpenseList.removeAll { item ->
-                                        selectedExpenseItems.contains(updatedExpenseList.indexOf(item))
+                                        selectedExpenseItems.contains(
+                                            updatedExpenseList.indexOf(
+                                                item
+                                            )
+                                        )
                                     }
 
                                     // 更新 incomeList
@@ -1422,7 +1459,7 @@ fun DeleteDataPage(
 
                         TextButton(
                             onClick = {
-                                if (selectedIncomeItems.isEmpty() && selectedExpenseItems.isEmpty()){
+                                if (selectedIncomeItems.isEmpty() && selectedExpenseItems.isEmpty()) {
 
                                     showDialog = false
 
@@ -1577,6 +1614,7 @@ fun AllRecord(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .background(color = Color(0xFFE8F7FF))
             //.padding(16.dp)
         ) {
             Box(
@@ -1748,7 +1786,10 @@ fun SetGoal(
                 .fillMaxSize()
                 .padding(contentPadding)
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color(0xFFE8F7FF))
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -1998,7 +2039,7 @@ fun SetGoal(
     }
 }
 
-
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun AppNavigation() {
     val navController = rememberNavController()
@@ -2008,39 +2049,145 @@ fun AppNavigation() {
 
     NavHost(navController = navController, startDestination = "home") {
         // 主頁面
-        composable("home") {
+        composable("home",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    tween(1000)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    tween(1000)
+                )
+            }
+        ) {
+
             AccountingAssistant(
                 navController,
                 incomeViewModel = incomeViewModel,
                 expenseViewModel = expenseViewModel,
                 goalViewModel = goalViewModel,
             )
+
         }
         // 收入頁面
-        composable("incomePage") {
+        composable("incomePage",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    tween(1000)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    tween(1000)
+                )
+            }
+        ) {
             IncomePage(navController, incomeViewModel)
         }
         //支出
-        composable("expensePage") {
+        composable("expensePage",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    tween(1000)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    tween(1000)
+                )
+            }
+        ) {
             ExpensePage(navController, expenseViewModel)
         }
-        composable("incomeFunction") {
+        composable("incomeFunction",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    tween(1000)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    tween(1000)
+                )
+            }
+        ) {
             IncomeFunction(navController, incomeViewModel)
         }
-        composable("expenseFunction") {
+        composable("expenseFunction",
+            enterTransition = {
+                slideIntoContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Left,
+                    tween(1000)
+                )
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    tween(1000)
+                )
+            }
+        ) {
             ExpenseFunction(navController, expenseViewModel)
         }
-        composable("deletedataPage") {
+        composable("deletedataPage",
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { -it },
+                    animationSpec = tween(1000)
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(1000)
+                )
+            }
+        ) {
             DeleteDataPage(
                 navController,
                 incomeViewModel = incomeViewModel,
                 expenseViewModel = expenseViewModel
             )
         }
-        composable("allRecord") {
+        composable("allRecord",
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { -it },
+                    animationSpec = tween(1000)
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(1000)
+                )
+            }
+        ) {
             AllRecord(navController, incomeViewModel, expenseViewModel)
         }
-        composable("setGoal") {
+        composable("setGoal",
+            enterTransition = {
+                slideInVertically(
+                    initialOffsetY = { -it },
+                    animationSpec = tween(1000)
+                )
+            },
+            exitTransition = {
+                slideOutVertically(
+                    targetOffsetY = { it },
+                    animationSpec = tween(1000)
+                )
+            }
+        ) {
             SetGoal(
                 navController = navController,
                 goalViewModel = goalViewModel,
