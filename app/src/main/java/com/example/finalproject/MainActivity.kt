@@ -92,6 +92,15 @@ import androidx.navigation.compose.composable
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.shape.RoundedCornerShape
+
+import com.example.finalproject.IncomeRecord
+import com.example.finalproject.ExpenseRecord
+
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.draw.shadow
+import java.text.SimpleDateFormat
+import java.util.*
 
 
 
@@ -110,30 +119,54 @@ class MainActivity : ComponentActivity() {
 }
 
 class IncomeViewModel : ViewModel() {
-    var incomeList = mutableStateListOf<Pair<String, String>>() // 動態更新的收入列表
 
-    //添加收入
+    var incomeList = mutableStateListOf<IncomeRecord>()
+
+
     fun addIncome(amount: String, note: String) {
-        incomeList.add(Pair(amount, note))
+        val date = getCurrentDate()
+        val incomeRecord = IncomeRecord(amount, note, date)
+        incomeList.add(incomeRecord)
     }
 
-    //加總收入
+
     fun getTotalIncome(): Int {
-        return incomeList.sumOf { it.first.toIntOrNull() ?: 0 }
+        return incomeList.sumOf { it.amount.toIntOrNull() ?: 0 }
+    }
+
+
+    private fun getCurrentDate(): String {
+        val sdf = SimpleDateFormat("MM/dd", Locale.getDefault()) // 日期格式
+        return sdf.format(Date()) // 取得今天的日期
     }
 }
+
+
 
 class ExpenseViewModel : ViewModel() {
-    var expenseList = mutableStateListOf<Pair<String, String>>()
+
+    var expenseList = mutableStateListOf<ExpenseRecord>()
+
 
     fun addExpense(amount: String, note: String) {
-        expenseList.add(Pair(amount, note))
+        val date = getCurrentDate()
+        val expenseRecord = ExpenseRecord(amount, note, date)
+        expenseList.add(expenseRecord)
     }
 
+
     fun getTotalExpense(): Int {
-        return expenseList.sumOf { it.first.toIntOrNull() ?: 0 }
+        return expenseList.sumOf { it.amount.toIntOrNull() ?: 0 }
+    }
+
+    // 取得當前日期
+    private fun getCurrentDate(): String {
+        val sdf = SimpleDateFormat("MM/dd", Locale.getDefault()) // 日期格式
+        return sdf.format(Date()) // 取得今天的日期
     }
 }
+
+
 
 class GoalViewModel : ViewModel() {
     var goalAmount = mutableStateOf(0)
@@ -190,7 +223,7 @@ fun AccountingAssistant(
 
     Column(
         modifier = modifier
-            .background(color = Color(0xFFE8F7FF)),
+            .background(color = Color(0xFFFAF9F6)),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
@@ -224,8 +257,8 @@ fun AccountingAssistant(
                         modifier = Modifier
                             .size(170.dp)
                             .padding(top = 16.dp),
-                        shape = CutCornerShape(10),
-                        colors = ButtonDefaults.buttonColors(Color(0xFF00C851))
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFF4CAF50))
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.expensive),
@@ -252,8 +285,8 @@ fun AccountingAssistant(
                         modifier = Modifier
                             .size(170.dp)
                             .padding(top = 16.dp),
-                        shape = CutCornerShape(10),
-                        colors = ButtonDefaults.buttonColors(Color(0xFFFF4444))
+                        shape = RoundedCornerShape(10.dp),
+                        colors = ButtonDefaults.buttonColors(Color(0xFFFF5252))
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.spending),
@@ -312,7 +345,7 @@ fun AccountingAssistant(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(100.dp)
-                .background(color = Color(0xFFA0C1D1)),
+                .background(color = Color(0xFFF4E8D7)),
             //.padding(16.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
@@ -331,7 +364,7 @@ fun AccountingAssistant(
                 ) {
                     TextButton(
                         onClick = { navController.navigate("deleteDataPage") },
-                        modifier = Modifier.size(75.dp)
+                        modifier = Modifier.size(75.dp)//.shadow(elevation = 4.dp, shape = CutCornerShape(10))
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.deletedata),
@@ -411,7 +444,7 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            //收入按鈕
+
             Column(
                 horizontalAlignment = Alignment.Start
             ) {
@@ -428,8 +461,8 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween, // 左右對齊
-                        verticalAlignment = Alignment.CenterVertically // 垂直居中
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
                             "目前收入",
@@ -523,14 +556,13 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
 }
 
 @Composable
-fun IncomeList(incomeData: List<Pair<String, String>>) {
-
+fun IncomeList(incomeData: List<IncomeRecord>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(12.dp)
+    ) {
 
-    )
-    {
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -538,14 +570,15 @@ fun IncomeList(incomeData: List<Pair<String, String>>) {
         ) {
             Spacer(modifier = Modifier.width(16.dp))
             Text("收入", fontSize = 18.sp)
-            Text("|")
+            Text("|", fontSize = 18.sp)
             Text("備註事項", fontSize = 18.sp)
+            Text("|", fontSize = 18.sp)
+            Text("時間", fontSize = 18.sp)
             Spacer(modifier = Modifier.width(16.dp))
         }
 
-
-
         Spacer(modifier = Modifier.height(10.dp))
+
 
         HorizontalDivider(
             modifier = Modifier
@@ -554,41 +587,55 @@ fun IncomeList(incomeData: List<Pair<String, String>>) {
             color = Color.Black
         )
 
+
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(450.dp) // 設定清單高度
+                .height(450.dp)
                 .padding(start = 12.dp, end = 12.dp)
                 .background(Color(0xFFF0F8FF))
-
         ) {
             items(incomeData) { item ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+
                     Text(
                         modifier = Modifier
                             .weight(1f),
-                        text = item.first + "元",
+                        text = item.amount + "元",
                         fontSize = 20.sp,
                         textAlign = TextAlign.Start,
                         color = Color.Black
                     )
+
                     Text(
                         modifier = Modifier
                             .weight(1f),
-                        text = item.second,
+                        text = item.note,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Start,
+                        color = Color.Black
+                    )
+
+                    Text(
+                        modifier = Modifier
+                            .weight(1f),
+                        text = item.date, // 顯示時間
                         fontSize = 20.sp,
                         textAlign = TextAlign.Start,
                         color = Color.Black
                     )
                 }
+
                 HorizontalDivider(thickness = 3.dp, color = Color(0xFF232C33))
             }
         }
+
+
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
@@ -597,6 +644,9 @@ fun IncomeList(incomeData: List<Pair<String, String>>) {
         )
     }
 }
+
+
+
 
 @Composable
 fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewModel = viewModel()) {
@@ -632,128 +682,128 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
                 Text(
                     text = "輸入收入",
                     fontSize = 24.sp,
-                    color = Color.White // 使用白色字體在藍色背景上
+                    color = Color.White
                 )
             }
 
 
-                Spacer(modifier = Modifier.height(25.dp))
-
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                ) {
-                    TextField(
-                        value = incomeAmount,
-                        onValueChange = { newValue ->
-                            if (newValue.all { it.isDigit() }) incomeAmount = newValue
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("金額") }
-                    )
-                    Spacer(modifier = Modifier.height(50.dp))
-                    TextField(
-                        value = incomeNote,
-                        onValueChange = { incomeNote = it },
-                        modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("備註事項") }
-                    )
-                }
-
-        }
+            Spacer(modifier = Modifier.height(25.dp))
 
 
             Column(
                 modifier = Modifier
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Bottom
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
-                Box(
+                TextField(
+                    value = incomeAmount,
+                    onValueChange = { newValue ->
+                        if (newValue.all { it.isDigit() }) incomeAmount = newValue
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("金額") }
+                )
+                Spacer(modifier = Modifier.height(50.dp))
+                TextField(
+                    value = incomeNote,
+                    onValueChange = { incomeNote = it },
+                    modifier = Modifier.fillMaxWidth(),
+                    placeholder = { Text("備註事項") }
+                )
+            }
+
+        }
+
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(color = Color(0xFFA0C1D1)),
+                //.padding(16.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Row(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(100.dp)
-                        .background(color = Color(0xFFA0C1D1)),
-                    //.padding(16.dp),
-                    contentAlignment = Alignment.BottomCenter
+                        .fillMaxWidth(),
+                    //.padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        //.padding(horizontal = 16.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
+
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+                        TextButton(
+                            onClick = { navController.popBackStack() },
+                            modifier = Modifier.size(75.dp)
                         ) {
-                            TextButton(
-                                onClick = { navController.popBackStack() },
-                                modifier = Modifier.size(75.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.resource_return),
-                                    contentDescription = "",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                )
-                            }
-                            Text(
-                                "返回",
-                                fontSize = 20.sp
+                            Image(
+                                painter = painterResource(id = R.drawable.resource_return),
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .fillMaxSize()
                             )
-
                         }
+                        Text(
+                            "返回",
+                            fontSize = 20.sp
+                        )
 
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            if (showDialog) {
-                                EnterCheckDialog(
-                                    checkText = "確定輸入此金額與備註事項?",
-                                    checkTitle = "輸入確認",
-                                    onConfirmation = {
-                                        incomeViewModel.addIncome(incomeAmount, incomeNote)
-                                        incomeAmount = ""
-                                        incomeNote = ""
-                                        showDialog = false
-                                    },
-                                    onDismissRequest = {
-                                        showDialog = false
-                                    }
-                                )
-                            }
+                    }
 
-                            TextButton(
-                                onClick = {
-                                    if (incomeAmount.isNotEmpty()) {
-                                        showDialog = true
-                                    }
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        if (showDialog) {
+                            EnterCheckDialog(
+                                checkText = "確定輸入此金額與備註事項?",
+                                checkTitle = "輸入確認",
+                                onConfirmation = {
+                                    incomeViewModel.addIncome(incomeAmount, incomeNote)
+                                    incomeAmount = ""
+                                    incomeNote = ""
+                                    showDialog = false
                                 },
-                                modifier = Modifier.size(75.dp)
-                            ) {
-                                Image(
-                                    painter = painterResource(id = R.drawable.inputdata),
-                                    contentDescription = "",
-                                    modifier = Modifier
-                                        .fillMaxSize()
-                                )
-                            }
-                            Text(
-                                "輸入",
-                                fontSize = 20.sp
+                                onDismissRequest = {
+                                    showDialog = false
+                                }
                             )
-
                         }
+
+                        TextButton(
+                            onClick = {
+                                if (incomeAmount.isNotEmpty()) {
+                                    showDialog = true
+                                }
+                            },
+                            modifier = Modifier.size(75.dp)
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.inputdata),
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        }
+                        Text(
+                            "輸入",
+                            fontSize = 20.sp
+                        )
+
                     }
                 }
             }
+        }
 
     }
 }
@@ -775,7 +825,7 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            //收入按鈕
+
             Column(
                 horizontalAlignment = Alignment.Start
             ) {
@@ -887,14 +937,14 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
 }
 
 @Composable
-fun ExpenseList(expenseData: List<Pair<String, String>>) {
+fun ExpenseList(expenseData: List<ExpenseRecord>) {
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .padding(12.dp)
+    ) {
 
-    )
-    {
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -902,15 +952,16 @@ fun ExpenseList(expenseData: List<Pair<String, String>>) {
         ) {
             Spacer(modifier = Modifier.width(16.dp))
             Text("支出", fontSize = 18.sp)
-            Text("|")
+            Text("|", fontSize = 18.sp)
             Text("備註事項", fontSize = 18.sp)
+            Text("|", fontSize = 18.sp)
+            Text("時間", fontSize = 18.sp)
             Spacer(modifier = Modifier.width(16.dp))
         }
 
-
-
         Spacer(modifier = Modifier.height(10.dp))
 
+        // 顯示分隔線
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
@@ -918,6 +969,7 @@ fun ExpenseList(expenseData: List<Pair<String, String>>) {
             color = Color.Black
         )
 
+        // 顯示支出項目
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
@@ -930,28 +982,41 @@ fun ExpenseList(expenseData: List<Pair<String, String>>) {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 10.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
+
                     Text(
                         modifier = Modifier
                             .weight(1f),
-                        text = item.first + "元",
+                        text = item.amount + "元",
                         fontSize = 20.sp,
                         textAlign = TextAlign.Start,
                         color = Color.Black
                     )
+
                     Text(
                         modifier = Modifier
                             .weight(1f),
-                        text = item.second,
+                        text = item.note,
+                        fontSize = 20.sp,
+                        textAlign = TextAlign.Start,
+                        color = Color.Black
+                    )
+
+                    Text(
+                        modifier = Modifier
+                            .weight(1f),
+                        text = item.date, // 顯示時間
                         fontSize = 20.sp,
                         textAlign = TextAlign.Start,
                         color = Color.Black
                     )
                 }
+
                 HorizontalDivider(thickness = 3.dp, color = Color(0xFF232C33))
             }
         }
+
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
@@ -960,6 +1025,7 @@ fun ExpenseList(expenseData: List<Pair<String, String>>) {
         )
     }
 }
+
 
 @Composable
 fun ExpenseFunction(
@@ -1258,13 +1324,13 @@ fun DeleteDataPage(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = item.first + "元",
+                            text = item.amount + "元",
                             fontSize = 18.sp,
                             textAlign = TextAlign.Start,
                             color = Color.Green
                         )
                         Text(
-                            text = item.second,
+                            text = item.note,
                             fontSize = 18.sp,
                             textAlign = TextAlign.End,
                             color = Color.Green
@@ -1331,13 +1397,13 @@ fun DeleteDataPage(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = item.first + "元",
+                            text = item.amount + "元",
                             fontSize = 18.sp,
                             textAlign = TextAlign.Start,
                             color = Color.Red
                         )
                         Text(
-                            text = item.second,
+                            text = item.note,
                             fontSize = 18.sp,
                             textAlign = TextAlign.Start,
                             color = Color.Red
@@ -1575,7 +1641,7 @@ fun InfoCheckDialog(
 fun TextCard(totalIncome: Int, totalExpense: Int, totalGoal: Int, navController: NavController) {
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFFE9D758),
+            containerColor = Color(0xFFFFF9C4),
         ),
         modifier = Modifier
             .size(width = 500.dp, height = 180.dp)
@@ -1603,19 +1669,34 @@ fun AllRecord(
     incomeViewModel: IncomeViewModel = viewModel(),
     expenseViewModel: ExpenseViewModel = viewModel()
 ) {
+
     val incomeData = incomeViewModel.incomeList
     val expenseData = expenseViewModel.expenseList
-    var incomeAmount by remember { mutableStateOf("") }
-    var incomeNote by remember { mutableStateOf("") }
-    var expenseAmount by remember { mutableStateOf("") }
-    var expenseNote by remember { mutableStateOf("") }
+
+
+    val allRecords = remember { mutableStateListOf<Triple<String, String, String>>() }
+
+
+    LaunchedEffect(incomeData, expenseData) {
+        allRecords.clear()
+
+        val maxSize = maxOf(incomeData.size, expenseData.size)
+
+        for (i in 0 until maxSize) {
+            if (i < incomeData.size) {
+                allRecords.add(Triple(incomeData[i].amount, incomeData[i].note, "income"))
+            }
+            if (i < expenseData.size) {
+                allRecords.add(Triple(expenseData[i].amount, expenseData[i].note, "expense"))
+            }
+        }
+    }
 
     Box {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = Color(0xFFE8F7FF))
-            //.padding(16.dp)
         ) {
             Box(
                 modifier = Modifier
@@ -1638,8 +1719,7 @@ fun AllRecord(
                     .fillMaxWidth()
                     .height(600.dp)
             ) {
-                // 顯示收入資料
-                items(incomeData) { item ->
+                items(allRecords) { item -> // 顯示交替後的資料
                     Column {
                         Row(
                             modifier = Modifier
@@ -1647,43 +1727,22 @@ fun AllRecord(
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = "+" + item.first + "元",
-                                fontSize = 25.sp,
-                                textAlign = TextAlign.End,
-                                color = Color.Green
-                            )
-                            Text(
-                                text = item.second,
-                                fontSize = 25.sp,
-                                textAlign = TextAlign.Start,
-                                color = Color.Green
-                            )
-                        }
-                        HorizontalDivider(thickness = 2.dp)
-                    }
-                }
+                            val amount = item.first
+                            val description = item.second
+                            val type = item.third
 
-                // 顯示支出資料
-                items(expenseData) { item ->
-                    Column {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
+                            // 根據類型顯示顏色和符號
                             Text(
-                                text = "-" + item.first + "元",
+                                text = if (type == "income") "+$amount 元" else "-$amount 元",
                                 fontSize = 25.sp,
                                 textAlign = TextAlign.End,
-                                color = Color.Red
+                                color = if (type == "income") Color.Green else Color.Red
                             )
                             Text(
-                                text = item.second,
+                                text = description,
                                 fontSize = 25.sp,
                                 textAlign = TextAlign.Start,
-                                color = Color.Red
+                                color = Color.Black
                             )
                         }
                         HorizontalDivider(thickness = 2.dp)
@@ -1706,13 +1765,11 @@ fun AllRecord(
                     .fillMaxWidth()
                     .height(100.dp)
                     .background(color = Color(0xFFA0C1D1)),
-                //.padding(16.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    //.padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -1735,14 +1792,16 @@ fun AllRecord(
                             "返回",
                             fontSize = 20.sp
                         )
-
                     }
                 }
             }
         }
-
     }
 }
+
+
+
+
 
 @Composable
 fun SetGoal(
@@ -2146,9 +2205,9 @@ fun AppNavigation() {
                 )
             },
             exitTransition = {
-                slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(1000)
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    tween(1000)
                 )
             }
         ) {
@@ -2166,9 +2225,9 @@ fun AppNavigation() {
                 )
             },
             exitTransition = {
-                slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(1000)
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    tween(1000)
                 )
             }
         ) {
@@ -2182,9 +2241,9 @@ fun AppNavigation() {
                 )
             },
             exitTransition = {
-                slideOutVertically(
-                    targetOffsetY = { it },
-                    animationSpec = tween(1000)
+                slideOutOfContainer(
+                    AnimatedContentTransitionScope.SlideDirection.Right,
+                    tween(1000)
                 )
             }
         ) {
