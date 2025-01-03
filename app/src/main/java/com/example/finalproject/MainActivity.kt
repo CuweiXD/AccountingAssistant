@@ -2639,7 +2639,7 @@ fun BarChart(
         val width = size.width
         val height = size.height
 
-
+        // 繪製背景
         drawRect(
             color = Color.LightGray,
             size = size
@@ -2655,36 +2655,37 @@ fun BarChart(
         combinedData.entries.sortedBy { it.key }.forEachIndexed { index, entry ->
             val (date, balance) = entry
 
+            // 跳過負值的餘額
+            if (balance <= 0) return@forEachIndexed
+
             // 計算條形圖的位置
             val xPos = index * barSpacing
 
             // 確保條形圖不會超過畫布的邊界
             val adjustedBarWidth = if (xPos + barWidth > width) width - xPos else barWidth
 
-            // 根據餘額正負繪製條形圖
-            if (balance != 0) {
-                val barColor = if (balance > 0) Color.Green else Color.Red
-                val barHeight = kotlin.math.abs(balance) * yRatio
-                val barTopY = if (balance > 0) height - barHeight else height
+            // 計算條形圖的高度與位置
+            val barHeight = balance * yRatio
+            val barTopY = height - barHeight
 
-                drawRect(
-                    color = barColor,
-                    topLeft = Offset(x = xPos, y = barTopY),
-                    size = Size(adjustedBarWidth, barHeight)
-                )
+            // 繪製條形圖
+            drawRect(
+                color = Color.Green,
+                topLeft = Offset(x = xPos, y = barTopY),
+                size = Size(adjustedBarWidth, barHeight)
+            )
 
-                // 顯示餘額金額
-                drawContext.canvas.nativeCanvas.drawText(
-                    balance.toString(),
-                    xPos + barWidth / 2f,
-                    barTopY - 10f, // 顯示位置
-                    Paint().apply {
-                        color = android.graphics.Color.BLACK
-                        textAlign = Paint.Align.CENTER
-                        textSize = 20f
-                    }
-                )
-            }
+            // 顯示餘額金額
+            drawContext.canvas.nativeCanvas.drawText(
+                balance.toString() + "元",
+                xPos + barWidth / 2f,
+                barTopY - 10f, // 顯示位置
+                Paint().apply {
+                    color = android.graphics.Color.BLACK
+                    textAlign = Paint.Align.CENTER
+                    textSize = 40f
+                }
+            )
 
             // 顯示日期
             drawContext.canvas.nativeCanvas.drawText(
@@ -2694,7 +2695,7 @@ fun BarChart(
                 Paint().apply {
                     color = android.graphics.Color.BLACK
                     textAlign = Paint.Align.CENTER
-                    textSize = 20f
+                    textSize = 40f
                 }
             )
         }
