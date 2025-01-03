@@ -436,6 +436,8 @@ fun AccountingAssistant(
 
                 }
 
+                VerticalDivider(thickness = 2.dp)
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -459,6 +461,9 @@ fun AccountingAssistant(
                     )
 
                 }
+
+                VerticalDivider(thickness = 2.dp)
+
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
@@ -597,6 +602,8 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
 
                     }
 
+                    VerticalDivider(thickness = 2.dp)
+
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
@@ -679,6 +686,7 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                 contentAlignment = Alignment.Center
             ) {
                 if (expanded.value) {
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -692,7 +700,7 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                                     newValue
                             },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("金額") }
+                            placeholder = { Text("輸入收入金額") }
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
@@ -704,12 +712,15 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                             placeholder = { Text("備註事項") }
                         )
 
-                        Spacer(modifier = Modifier.height(22.dp))
+                        Spacer(modifier = Modifier.height(27.dp))
 
 
                         Button(
                             onClick = {
                                 if (incomeAmount.isNotEmpty()) {
+                                    if (incomeNote.isEmpty()) {
+                                        incomeNote = "None"
+                                    }
                                     showDialog = true
                                 }
                             },
@@ -1003,125 +1014,250 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
     var expenseAmount by remember { mutableStateOf("") }
     var expenseNote by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier
-            .background(color = Color(0xFFFAF9F6))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.SpaceBetween
-        ) {
+    val expanded = remember { mutableStateOf(false) }
+    val chartHeight by animateDpAsState(targetValue = if (expanded.value) 280.dp else 0.dp)
 
-            Column(
-                horizontalAlignment = Alignment.Start
-            ) {
-                Spacer(modifier = Modifier.height(20.dp))
-                Button(
-                    onClick = { navController.navigate("expenseFunction") },
-                    modifier = Modifier
-                        .size(width = 400.dp, height = 150.dp)
-                        .padding(top = 16.dp),
-                    shape = CutCornerShape(10),
-                    colors = ButtonDefaults.buttonColors(Color(0xFFFF5252))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            "目前支出",
-                            fontSize = 25.sp
-                        )
+    var showDialog by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
 
-
-                        Text(
-                            "NT\$ ${expenseViewModel.getTotalExpense()}",
-                            fontSize = 25.sp
-                        )
-                    }
+    if (showDialog) {
+        EnterCheckDialog(
+            checkText = "確定輸入此金額與備註事項?",
+            checkTitle = "輸入確認",
+            onConfirmation = {
+                expenseViewModel.addExpense(expenseAmount, expenseNote)
+                expenseAmount = ""
+                expenseNote = ""
+                scope.launch {
+                    snackbarHostState.showSnackbar("支出金額已更新")
                 }
-                Spacer(modifier = Modifier.height(30.dp))
-                ExpenseList(expenseData = expenseViewModel.expenseList)
+                showDialog = false
+            },
+            onDismissRequest = {
+                showDialog = false
             }
-
-            Spacer(modifier = Modifier.height(30.dp))
-        }
+        )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Bottom
-    ) {
-        Box(
+
+
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.padding(bottom = 50.dp)
+            )
+        }
+    ) { contentPadding ->
+
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(100.dp)
-                .background(color = Color(0xFFF4E8D7)),
-            //.padding(16.dp),
-            contentAlignment = Alignment.BottomCenter
+                .background(color = Color(0xFFFAF9F6))
+                .padding(contentPadding)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                //.padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxSize()
+                    .padding(16.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                //verticalArrangement = Arrangement.SpaceEvenly
             ) {
 
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                Spacer(modifier = Modifier.height(180.dp))
+                ExpenseList(expenseData = expenseViewModel.expenseList)
+
+
+            }
+
+        }
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(color = Color(0xFFF4E8D7)),
+                //.padding(16.dp),
+                contentAlignment = Alignment.BottomCenter
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    //.padding(horizontal = 16.dp),
+                    horizontalArrangement = Arrangement.SpaceEvenly,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier.size(75.dp)
+
+
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.resource_return),
-                            contentDescription = "",
-                            modifier = Modifier
-                                .fillMaxSize()
+                        TextButton(
+                            onClick = { navController.popBackStack() },
+                            modifier = Modifier.size(75.dp),
+                            enabled = !expanded.value
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.resource_return),
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        }
+                        Text(
+                            "返回",
+                            fontSize = 20.sp
                         )
+
                     }
-                    Text(
-                        "返回",
-                        fontSize = 20.sp
-                    )
 
-                }
+                    VerticalDivider(thickness = 2.dp)
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    TextButton(
-                        onClick = { navController.navigate("deletedataPage") },
-                        modifier = Modifier.size(75.dp)
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.deletedata),
-                            contentDescription = "",
-                            modifier = Modifier
-                                .fillMaxSize()
+                        TextButton(
+                            onClick = { navController.navigate("deletedataPage") },
+                            modifier = Modifier.size(75.dp),
+                            enabled = !expanded.value
+                        ) {
+                            Image(
+                                painter = painterResource(id = R.drawable.deletedata),
+                                contentDescription = "",
+                                modifier = Modifier
+                                    .fillMaxSize()
+                            )
+                        }
+                        Text(
+                            "刪除紀錄",
+                            fontSize = 20.sp
                         )
-                    }
-                    Text(
-                        "刪除紀錄",
-                        fontSize = 20.sp
-                    )
 
+                    }
                 }
             }
         }
+        if (expanded.value) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.5f))
+            )
+        }
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.Start
+
+        ) {
+            Spacer(modifier = Modifier.height(20.dp))
+
+            ElevatedButton(
+                onClick = { expanded.value = !expanded.value },
+                modifier = Modifier
+                    .size(width = 400.dp, height = 150.dp)
+                    .padding(top = 16.dp),
+                shape = CutCornerShape(10),
+                colors = ButtonDefaults.buttonColors(Color(0xFFFF5252))
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "目前支出",
+                        fontSize = 25.sp
+                    )
+
+
+                    Text(
+                        "NT\$ ${expenseViewModel.getTotalExpense()}",
+                        fontSize = 25.sp
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(chartHeight)
+                    .padding(horizontal = 16.dp)
+                    .background(Color(0xFFEDEDED))
+                    .border(
+                        width = 2.dp,
+                        color = Color.Black,
+                        shape = RoundedCornerShape(2.dp)
+
+                    ),
+
+                contentAlignment = Alignment.Center
+            ) {
+                if (expanded.value) {
+
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+
+                        TextField(
+                            value = expenseAmount,
+                            onValueChange = { newValue ->
+                                if (newValue.all { it.isDigit() }) expenseAmount =
+                                    newValue
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("輸入支出金額") }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+
+
+                        TextField(
+                            value = expenseNote,
+                            onValueChange = { expenseNote = it },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("備註事項") }
+                        )
+
+                        Spacer(modifier = Modifier.height(27.dp))
+
+
+                        Button(
+                            onClick = {
+                                if (expenseAmount.isNotEmpty()) {
+                                    if(expenseNote.isEmpty()){
+                                        expenseNote = "None"
+                                    }
+                                    showDialog = true
+                                }
+                            },
+                            modifier = Modifier
+                                .size(width = 100.dp, height = 50.dp)
+                                .align(Alignment.CenterHorizontally),
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(Color(0xFF42A5F5))
+                        ) {
+                            Text("儲存")
+                        }
+                    }
+                }
+            }
+
+
+        }
+
     }
 }
 
@@ -1462,6 +1598,8 @@ fun DeleteDataPage(
     var selectedExpenseItems by remember { mutableStateOf<Set<Int>>(emptySet()) }
     var showDialog by remember { mutableStateOf(false) }
 
+
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -1474,10 +1612,11 @@ fun DeleteDataPage(
                 .background(color = Color(0xFFFAF9F6))
                 //.padding(16.dp),
                 .align(Alignment.TopCenter),
-            horizontalAlignment = Alignment.Start,
+            //horizontalAlignment = Alignment.Start,
             //verticalArrangement = Arrangement.SpaceBetween
 
         ) {
+
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1492,153 +1631,195 @@ fun DeleteDataPage(
                 )
             }
 
-            Row(
+            Spacer(modifier = Modifier.height(10.dp))
+            HorizontalDivider(thickness = 3.dp, color = Color.Black)
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(30.dp),
-                horizontalArrangement = Arrangement.Start
+                //.background(color = Color(0xFFFF8552)),
+                //contentAlignment = Alignment.Center
             ) {
-
-                Text("收入", fontSize = 20.sp)
-                Spacer(modifier = Modifier.width(40.dp))
-                Text("|", fontSize = 20.sp)
-                //VerticalDivider(color = Color.Black)
-                Spacer(modifier = Modifier.width(40.dp))
-                Text("備註事項", fontSize = 20.sp)
-
-            }
-
-            Column() {
-                HorizontalDivider(thickness = 2.dp, color = Color.Black)
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(10.dp)
-            ) {
-                items(incomeViewModel.incomeList.size) { index ->
-                    val item = incomeViewModel.incomeList[index]
+                Column {
 
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp)
-                            .clickable {
-                                // 點擊時切換選擇狀態
-                                selectedIncomeItems = if (selectedIncomeItems.contains(index)) {
-                                    selectedIncomeItems - index
-                                } else {
-                                    selectedIncomeItems + index
-                                }
-                            },
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = item.amount + "元",
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Start,
-                            color = Color.Green
-                        )
-                        Text(
-                            text = item.note,
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.End,
-                            color = Color.Green
-                        )
-                        Checkbox(
-                            checked = selectedIncomeItems.contains(index),
-                            onCheckedChange = { isChecked ->
-                                selectedIncomeItems = if (isChecked) {
-                                    selectedIncomeItems + index
-                                } else {
-                                    selectedIncomeItems - index
-                                }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("收入", fontSize = 18.sp)
+                        Text("|", fontSize = 18.sp)
+                        Text("備註事項", fontSize = 18.sp)
+                        Text("|", fontSize = 18.sp)
+                        Text("時間", fontSize = 18.sp)
+                        Spacer(modifier = Modifier.width(60.dp))
+                    }
+
+                    HorizontalDivider(thickness = 3.dp, color = Color.Black)
+                    //Spacer(modifier = Modifier.height(16.dp))
+
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .padding(10.dp)
+                    ) {
+                        items(incomeViewModel.incomeList.size) { index ->
+                            val item = incomeViewModel.incomeList[index]
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
+                                    .clickable {
+                                        // 點擊時切換選擇狀態
+                                        selectedIncomeItems =
+                                            if (selectedIncomeItems.contains(index)) {
+                                                selectedIncomeItems - index
+                                            } else {
+                                                selectedIncomeItems + index
+                                            }
+                                    },
+                                //horizontalArrangement = Arrangement.SpaceBetween
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = item.amount + "元",
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Green
+                                )
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = item.note,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = item.date,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Black
+                                )
+                                Checkbox(
+                                    checked = selectedIncomeItems.contains(index),
+                                    onCheckedChange = { isChecked ->
+                                        selectedIncomeItems = if (isChecked) {
+                                            selectedIncomeItems + index
+                                        } else {
+                                            selectedIncomeItems - index
+                                        }
+                                    }
+                                )
                             }
-                        )
+                            HorizontalDivider(thickness = 2.dp, color = Color.Black)
+                        }
                     }
                 }
             }
 
-            Column() {
-                HorizontalDivider(thickness = 2.dp, color = Color.Black)
-            }
+            HorizontalDivider(thickness = 3.dp, color = Color.Black)
 
-            Row(
+            Spacer(modifier = Modifier.height(5.dp))
+
+
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(30.dp),
-                horizontalArrangement = Arrangement.Start
+                //.background(color = Color(0xFFFF8552)),
+                //contentAlignment = Alignment.Center
             ) {
-
-                Text("支出", fontSize = 20.sp)
-                Spacer(modifier = Modifier.width(40.dp))
-                Text("|", fontSize = 20.sp)
-                Spacer(modifier = Modifier.width(40.dp))
-                Text("備註事項", fontSize = 20.sp)
-
-            }
-
-            Column() {
-                HorizontalDivider(thickness = 2.dp, color = Color.Black)
-            }
-
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .padding(10.dp)
-            ) {
-                items(expenseViewModel.expenseList.size) { index ->
-                    val item = expenseViewModel.expenseList[index]
+                Column {
 
                     Row(
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 10.dp)
-                            .clickable {
-                                // 點擊時切換選擇狀態
-
-                                selectedExpenseItems = if (selectedExpenseItems.contains(index)) {
-                                    selectedExpenseItems - index
-                                } else {
-                                    selectedExpenseItems + index
-                                }
-                            },
+                            .fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(
-                            text = item.amount + "元",
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Start,
-                            color = Color.Red
-                        )
-                        Text(
-                            text = item.note,
-                            fontSize = 18.sp,
-                            textAlign = TextAlign.Start,
-                            color = Color.Red
-                        )
-                        Checkbox(
-                            checked = selectedExpenseItems.contains(index),
-                            onCheckedChange = { isChecked ->
-                                val expenseIndex = index + incomeViewModel.incomeList.size
-                                selectedExpenseItems = if (isChecked) {
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("支出", fontSize = 18.sp)
+                        Text("|", fontSize = 18.sp)
+                        Text("備註事項", fontSize = 18.sp)
+                        Text("|", fontSize = 18.sp)
+                        Text("時間", fontSize = 18.sp)
+                        Spacer(modifier = Modifier.width(60.dp))
+                    }
 
-                                    selectedExpenseItems + index
-                                } else {
-                                    selectedExpenseItems - index
-                                }
+                    Column() {
+                        HorizontalDivider(thickness = 3.dp, color = Color.Black)
+                    }
+
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(300.dp)
+                            .padding(10.dp)
+                    ) {
+                        items(expenseViewModel.expenseList.size) { index ->
+                            val item = expenseViewModel.expenseList[index]
+
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 10.dp)
+                                    .clickable {
+                                        // 點擊時切換選擇狀態
+
+                                        selectedExpenseItems =
+                                            if (selectedExpenseItems.contains(index)) {
+                                                selectedExpenseItems - index
+                                            } else {
+                                                selectedExpenseItems + index
+                                            }
+                                    },
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = item.amount + "元",
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Red
+                                )
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = item.note,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Black
+                                )
+                                Text(
+                                    modifier = Modifier.weight(1f),
+                                    text = item.date,
+                                    fontSize = 18.sp,
+                                    textAlign = TextAlign.Center,
+                                    color = Color.Black
+                                )
+                                Checkbox(
+                                    checked = selectedExpenseItems.contains(index),
+                                    onCheckedChange = { isChecked ->
+                                        val expenseIndex = index + incomeViewModel.incomeList.size
+                                        selectedExpenseItems = if (isChecked) {
+
+                                            selectedExpenseItems + index
+                                        } else {
+                                            selectedExpenseItems - index
+                                        }
+                                    }
+                                )
                             }
-                        )
+                            HorizontalDivider(thickness = 2.dp, color = Color.Black)
+                        }
                     }
                 }
             }
-            Column {
-                HorizontalDivider(thickness = 2.dp, color = Color.Black)
-            }
+            HorizontalDivider(thickness = 3.dp, color = Color.Black)
         }
+
 
         Column(
             modifier = Modifier
@@ -1684,6 +1865,8 @@ fun DeleteDataPage(
                         )
 
                     }
+
+                    VerticalDivider(thickness = 2.dp)
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -2237,6 +2420,8 @@ fun SetGoal(
 
                     }
 
+                    VerticalDivider(thickness = 2.dp)
+
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
@@ -2298,6 +2483,9 @@ fun SetGoal(
                         )
 
                     }
+
+                    VerticalDivider(thickness = 2.dp)
+                    2
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
