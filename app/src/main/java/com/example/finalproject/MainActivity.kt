@@ -2614,18 +2614,32 @@ fun BarChart(
     expenseData: List<ExpenseRecord>,
     modifier: Modifier = Modifier
 ) {
-    // 設定固定的 Y 軸金額上限為 50000
-    val maxAmount = 50000
+    // 合併收入和支出的資料，計算餘額（收入 - 支出）
+    val combinedData = mutableMapOf<String, Int>()
 
-    // 固定條形圖的寬度
+    incomeData.forEach { record ->
+        combinedData[record.date] =
+            (combinedData[record.date] ?: 0) + (record.amount.toIntOrNull() ?: 0)
+    }
+
+    expenseData.forEach { record ->
+        combinedData[record.date] =
+            (combinedData[record.date] ?: 0) - (record.amount.toIntOrNull() ?: 0)
+    }
+
+    // 找到最大餘額的絕對值，作為動態 maxAmount 的基礎
+    val maxBalance = combinedData.values.maxOfOrNull { kotlin.math.abs(it) } ?: 0
+    val maxAmount = maxBalance + 20000
+
+
     val barWidth = 40f
 
-    // 畫布
+
     Canvas(modifier = modifier) {
         val width = size.width
         val height = size.height
 
-        // 繪製背景
+
         drawRect(
             color = Color.LightGray,
             size = size
@@ -2633,19 +2647,6 @@ fun BarChart(
 
         // 計算 Y 軸的比例
         val yRatio = height / maxAmount.toFloat()
-
-        // 合併收入和支出的資料，計算餘額（收入 - 支出）
-        val combinedData = mutableMapOf<String, Int>()
-
-        incomeData.forEach { record ->
-            combinedData[record.date] =
-                (combinedData[record.date] ?: 0) + (record.amount.toIntOrNull() ?: 0)
-        }
-
-        expenseData.forEach { record ->
-            combinedData[record.date] =
-                (combinedData[record.date] ?: 0) - (record.amount.toIntOrNull() ?: 0)
-        }
 
         // 計算條形圖的偏移量，每個條形圖之間有間隔
         val barSpacing = barWidth * 2f
@@ -2699,6 +2700,7 @@ fun BarChart(
         }
     }
 }
+
 
 
 @OptIn(ExperimentalAnimationApi::class)
