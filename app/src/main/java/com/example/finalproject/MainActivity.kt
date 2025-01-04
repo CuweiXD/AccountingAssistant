@@ -764,7 +764,7 @@ fun IncomeList(incomeData: List<IncomeRecord>) {
             Text("|", fontSize = 18.sp)
             Text("備註事項", fontSize = 18.sp)
             Text("|", fontSize = 18.sp)
-            Text("時間", fontSize = 18.sp)
+            Text("日期", fontSize = 18.sp)
             Spacer(modifier = Modifier.width(16.dp))
         }
 
@@ -1240,7 +1240,7 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
                         Button(
                             onClick = {
                                 if (expenseAmount.isNotEmpty()) {
-                                    if(expenseNote.isEmpty()){
+                                    if (expenseNote.isEmpty()) {
                                         expenseNote = "None"
                                     }
                                     showDialog = true
@@ -1283,7 +1283,7 @@ fun ExpenseList(expenseData: List<ExpenseRecord>) {
             Text("|", fontSize = 18.sp)
             Text("備註事項", fontSize = 18.sp)
             Text("|", fontSize = 18.sp)
-            Text("時間", fontSize = 18.sp)
+            Text("日期", fontSize = 18.sp)
             Spacer(modifier = Modifier.width(16.dp))
         }
 
@@ -1561,7 +1561,7 @@ fun BalanceDisplay(
     ) {
         Text(
             text = "餘額: NT\$ $balance",
-            fontSize = 30.sp,
+            fontSize = 35.sp,
             color = if (balance > 0) {
                 Color.Black
             } else if (balance < 0) {
@@ -1574,19 +1574,21 @@ fun BalanceDisplay(
 
     }
 
-    Spacer(modifier = Modifier.height(20.dp))
-
-    Text(
-        text = TextDisplay,
-        fontSize = 24.sp
-    )
-
+    Spacer(modifier = Modifier.height(10.dp))
     HorizontalDivider(thickness = 2.dp, color = Color.Black)
+    Spacer(modifier = Modifier.height(10.dp))
 
     Text(
         text = TextDisplay2,
         fontSize = 24.sp
 
+    )
+
+    Spacer(modifier = Modifier.height(5.dp))
+
+    Text(
+        text = TextDisplay,
+        fontSize = 24.sp
     )
 }
 
@@ -1634,7 +1636,7 @@ fun DeleteDataPage(
                 )
             }
 
-            Spacer(modifier = Modifier.height(10.dp))
+            Spacer(modifier = Modifier.height(5.dp))
             HorizontalDivider(thickness = 3.dp, color = Color.Black)
             Box(
                 modifier = Modifier
@@ -1654,7 +1656,7 @@ fun DeleteDataPage(
                         Text("|", fontSize = 18.sp)
                         Text("備註事項", fontSize = 18.sp)
                         Text("|", fontSize = 18.sp)
-                        Text("時間", fontSize = 18.sp)
+                        Text("日期", fontSize = 18.sp)
                         Spacer(modifier = Modifier.width(60.dp))
                     }
 
@@ -1666,7 +1668,7 @@ fun DeleteDataPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(300.dp)
-                            .padding(10.dp)
+                            .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
                     ) {
                         items(incomeViewModel.incomeList.size) { index ->
                             val item = incomeViewModel.incomeList[index]
@@ -1674,7 +1676,7 @@ fun DeleteDataPage(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 10.dp)
+                                    .padding(vertical = 3.dp)
                                     .clickable {
                                         // 點擊時切換選擇狀態
                                         selectedIncomeItems =
@@ -1684,8 +1686,8 @@ fun DeleteDataPage(
                                                 selectedIncomeItems + index
                                             }
                                     },
-                                //horizontalArrangement = Arrangement.SpaceBetween
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     modifier = Modifier.weight(1f),
@@ -1709,6 +1711,7 @@ fun DeleteDataPage(
                                     color = Color.Black
                                 )
                                 Checkbox(
+                                    modifier = Modifier.weight(0.3f),
                                     checked = selectedIncomeItems.contains(index),
                                     onCheckedChange = { isChecked ->
                                         selectedIncomeItems = if (isChecked) {
@@ -1748,7 +1751,7 @@ fun DeleteDataPage(
                         Text("|", fontSize = 18.sp)
                         Text("備註事項", fontSize = 18.sp)
                         Text("|", fontSize = 18.sp)
-                        Text("時間", fontSize = 18.sp)
+                        Text("日期", fontSize = 18.sp)
                         Spacer(modifier = Modifier.width(60.dp))
                     }
 
@@ -1760,7 +1763,7 @@ fun DeleteDataPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(300.dp)
-                            .padding(10.dp)
+                            .padding(start = 10.dp, end = 10.dp, bottom = 10.dp)
                     ) {
                         items(expenseViewModel.expenseList.size) { index ->
                             val item = expenseViewModel.expenseList[index]
@@ -1768,10 +1771,9 @@ fun DeleteDataPage(
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 10.dp)
+                                    .padding(vertical = 3.dp)
                                     .clickable {
                                         // 點擊時切換選擇狀態
-
                                         selectedExpenseItems =
                                             if (selectedExpenseItems.contains(index)) {
                                                 selectedExpenseItems - index
@@ -1779,7 +1781,8 @@ fun DeleteDataPage(
                                                 selectedExpenseItems + index
                                             }
                                     },
-                                horizontalArrangement = Arrangement.SpaceEvenly
+                                horizontalArrangement = Arrangement.SpaceEvenly,
+                                verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
                                     modifier = Modifier.weight(1f),
@@ -1803,6 +1806,7 @@ fun DeleteDataPage(
                                     color = Color.Black
                                 )
                                 Checkbox(
+                                    modifier = Modifier.weight(0.3f),
                                     checked = selectedExpenseItems.contains(index),
                                     onCheckedChange = { isChecked ->
                                         val expenseIndex = index + incomeViewModel.incomeList.size
@@ -1820,7 +1824,7 @@ fun DeleteDataPage(
                     }
                 }
             }
-            HorizontalDivider(thickness = 3.dp, color = Color.Black)
+            HorizontalDivider(thickness = 2.dp, color = Color.Black)
         }
 
 
@@ -2137,7 +2141,7 @@ fun AllRecord(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                            horizontalArrangement = Arrangement.SpaceEvenly
                         ) {
                             val amount = item.first
                             val description = item.second
@@ -2146,20 +2150,23 @@ fun AllRecord(
 
                             // 根據類型顯示顏色和符號
                             Text(
+                                modifier = Modifier.weight(1f),
                                 text = if (type == "income") "+$amount 元" else "-$amount 元",
-                                fontSize = 25.sp,
+                                fontSize = 20.sp,
                                 textAlign = TextAlign.Start,
                                 color = if (type == "income") Color.Green else Color.Red
                             )
                             Text(
+                                modifier = Modifier.weight(1f),
                                 text = description,
-                                fontSize = 25.sp,
+                                fontSize = 20.sp,
                                 textAlign = TextAlign.Center,
                                 color = Color.Black
                             )
                             Text(
+                                modifier = Modifier.weight(1f),
                                 text = date,
-                                fontSize = 25.sp,
+                                fontSize = 20.sp,
                                 textAlign = TextAlign.End,
                                 color = Color.Black
                             )
@@ -2656,7 +2663,7 @@ fun PieChart(
     val expensePercentage = (totalExpense.toFloat() / totalAmount) * 360f
 
     // Pie Chart 顏色設定
-    val colors = listOf( Color(0xFF4CAF50), Color(0xFFFF5252))
+    val colors = listOf(Color(0xFF4CAF50), Color(0xFFFF5252))
 
     // 繪製 Pie Chart
     Canvas(modifier = modifier.size(280.dp)) {
@@ -2720,9 +2727,6 @@ fun PieChart(
         }
     }
 }
-
-
-
 
 
 @OptIn(ExperimentalAnimationApi::class)
