@@ -114,10 +114,13 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.dp
 
 import com.example.finalproject.Quadruple
+import kotlin.math.cos
+import kotlin.math.sin
 
 
 class MainActivity : ComponentActivity() {
@@ -348,12 +351,12 @@ fun AccountingAssistant(
                 contentAlignment = Alignment.Center
             ) {
                 if (expanded.value) {
-                    BarChart(
+                    PieChart(
                         incomeData = incomeViewModel.incomeList,
                         expenseData = expenseViewModel.expenseList,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(280.dp)
+                            .size(280.dp)
                             .padding(8.dp)
                     )
                 }
@@ -2538,75 +2541,8 @@ fun SetGoal(
     }
 }
 
-/*@Composable
-fun LineChart(
-    incomeData: List<IncomeRecord>,
-    expenseData: List<ExpenseRecord>,
-    modifier: Modifier = Modifier
-) {
-    // 取得收入和支出中的最大金額來設定圖表的 Y 軸範圍
-    val maxAmount = (incomeData.maxOfOrNull { it.amount.toIntOrNull() ?: 0 }
-        ?: 0).coerceAtLeast(
-        expenseData.maxOfOrNull { it.amount.toIntOrNull() ?: 0 } ?: 0
-    )
-
-    // 畫布
-    Canvas(modifier = modifier) {
-        val width = size.width
-        val height = size.height
-
-        // 繪製背景和軸線
-        drawRect(
-            color = Color.LightGray,
-            size = size
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(0f, height),
-            end = Offset(width, height),
-            strokeWidth = 2.dp.toPx()
-        )
-        drawLine(
-            color = Color.Black,
-            start = Offset(0f, 0f),
-            end = Offset(0f, height),
-            strokeWidth = 2.dp.toPx()
-        )
-
-        // 計算點的座標
-        val xStep = width / (incomeData.size.coerceAtLeast(expenseData.size).toFloat())
-        val yRatio = height / maxAmount
-
-        // 繪製收入折線
-        val incomePoints = incomeData.mapIndexed { index, record ->
-            Offset(x = index * xStep, y = height - (record.amount.toIntOrNull() ?: 0) * yRatio)
-        }
-        for (i in 0 until incomePoints.size - 1) {
-            drawLine(
-                color = Color.Green,
-                start = incomePoints[i],
-                end = incomePoints[i + 1],
-                strokeWidth = 4.dp.toPx()
-            )
-        }
-
-        // 繪製支出折線
-        val expensePoints = expenseData.mapIndexed { index, record ->
-            Offset(x = index * xStep, y = height - (record.amount.toIntOrNull() ?: 0) * yRatio)
-        }
-        for (i in 0 until expensePoints.size - 1) {
-            drawLine(
-                color = Color.Red,
-                start = expensePoints[i],
-                end = expensePoints[i + 1],
-                strokeWidth = 4.dp.toPx()
-            )
-        }
-    }
-}*/
-
 // 定義 Record 類別，用來統一收入和支出的資料
-data class Record(val date: String, val incomeAmount: Int, val expenseAmount: Int)
+/*data class Record(val date: String, val incomeAmount: Int, val expenseAmount: Int)
 
 @Composable
 fun BarChart(
@@ -2700,7 +2636,92 @@ fun BarChart(
             )
         }
     }
+}*/
+
+@Composable
+fun PieChart(
+    incomeData: List<IncomeRecord>,
+    expenseData: List<ExpenseRecord>,
+    modifier: Modifier = Modifier
+) {
+    // 計算收入和支出的總額
+    val totalIncome = incomeData.sumOf { it.amount.toIntOrNull() ?: 0 }
+    val totalExpense = expenseData.sumOf { it.amount.toIntOrNull() ?: 0 }
+
+    // 合併資料，將收入和支出轉換成百分比
+    val totalAmount = totalIncome + totalExpense
+    if (totalAmount == 0) return // 總額為零時，不繪製圖表
+
+    val incomePercentage = (totalIncome.toFloat() / totalAmount) * 360f
+    val expensePercentage = (totalExpense.toFloat() / totalAmount) * 360f
+
+    // Pie Chart 顏色設定
+    val colors = listOf( Color(0xFF4CAF50), Color(0xFFFF5252))
+
+    // 繪製 Pie Chart
+    Canvas(modifier = modifier.size(280.dp)) {
+        val radius = size.minDimension / 2
+        val center = Offset(size.width / 2, size.height / 2)
+        var startAngle = 0f
+
+        // 繪製收入區塊
+        drawArc(
+            color = colors[0],
+            startAngle = startAngle,
+            sweepAngle = incomePercentage,
+            useCenter = true
+        )
+        if (incomePercentage > 0) {
+            // 計算收入文字位置
+            val middleAngle = startAngle + incomePercentage / 2
+            val textOffset = Offset(
+                x = center.x + (radius / 2) * cos(Math.toRadians(middleAngle.toDouble())).toFloat(),
+                y = center.y + (radius / 2) * sin(Math.toRadians(middleAngle.toDouble())).toFloat()
+            )
+            // 繪製收入文字
+            drawContext.canvas.nativeCanvas.drawText(
+                "收入: $totalIncome 元 , ${(incomePercentage / 360 * 100).toInt()}%",
+                textOffset.x,
+                textOffset.y,
+                Paint().apply {
+                    color = android.graphics.Color.WHITE
+                    textAlign = Paint.Align.CENTER
+                    textSize = 40f
+                }
+            )
+        }
+        startAngle += incomePercentage
+
+        // 繪製支出區塊
+        drawArc(
+            color = colors[1],
+            startAngle = startAngle,
+            sweepAngle = expensePercentage,
+            useCenter = true
+        )
+        if (expensePercentage > 0) {
+            // 計算支出文字位置
+            val middleAngle = startAngle + expensePercentage / 2
+            val textOffset = Offset(
+                x = center.x + (radius / 2) * cos(Math.toRadians(middleAngle.toDouble())).toFloat(),
+                y = center.y + (radius / 2) * sin(Math.toRadians(middleAngle.toDouble())).toFloat()
+            )
+            // 繪製支出文字
+            drawContext.canvas.nativeCanvas.drawText(
+                "支出: $totalExpense 元 , ${(expensePercentage / 360 * 100).toInt()}%",
+                textOffset.x,
+                textOffset.y,
+                Paint().apply {
+                    color = android.graphics.Color.WHITE
+                    textAlign = Paint.Align.CENTER
+                    textSize = 40f
+                }
+            )
+        }
+    }
 }
+
+
 
 
 
