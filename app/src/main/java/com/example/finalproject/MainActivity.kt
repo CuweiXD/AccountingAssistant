@@ -108,6 +108,7 @@ import java.util.*
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ElevatedButton
 import androidx.compose.runtime.derivedStateOf
@@ -234,6 +235,8 @@ fun AccountingAssistant(
     val expanded = remember { mutableStateOf(false) }
     val chartHeight by animateDpAsState(targetValue = if (expanded.value) 280.dp else 0.dp) // 條形圖高度動畫
 
+    var selectedChart by remember { mutableStateOf("PieChart") }
+
 
     //val image = painterResource(R.drawable.expensive, R.drawable.spending)
 
@@ -337,11 +340,10 @@ fun AccountingAssistant(
                 Text(if (expanded.value) "收起圖表" else "展開圖表")
             }
 
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(chartHeight) // 使用動畫的高度
+                    .height(chartHeight)
                     .padding(horizontal = 16.dp)
                     .border(
                         width = 2.dp,
@@ -351,11 +353,11 @@ fun AccountingAssistant(
                 contentAlignment = Alignment.Center
             ) {
                 if (expanded.value) {
+
                     PieChart(
                         incomeData = incomeViewModel.incomeList,
                         expenseData = expenseViewModel.expenseList,
                         modifier = Modifier
-                            .fillMaxWidth()
                             .size(280.dp)
                             .padding(8.dp)
                     )
@@ -774,7 +776,7 @@ fun IncomeList(incomeData: List<IncomeRecord>) {
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
-            thickness = 2.dp,
+            thickness = 3.dp,
             color = Color.Black
         )
 
@@ -822,7 +824,7 @@ fun IncomeList(incomeData: List<IncomeRecord>) {
                     )
                 }
 
-                HorizontalDivider(thickness = 3.dp, color = Color(0xFF232C33))
+                HorizontalDivider(thickness = 2.dp, color = Color(0xFF232C33))
             }
         }
 
@@ -830,7 +832,7 @@ fun IncomeList(incomeData: List<IncomeRecord>) {
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
-            thickness = 2.dp,
+            thickness = 3.dp,
             color = Color.Black
         )
     }
@@ -1293,7 +1295,7 @@ fun ExpenseList(expenseData: List<ExpenseRecord>) {
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
-            thickness = 2.dp,
+            thickness = 3.dp,
             color = Color.Black
         )
 
@@ -1341,14 +1343,14 @@ fun ExpenseList(expenseData: List<ExpenseRecord>) {
                     )
                 }
 
-                HorizontalDivider(thickness = 3.dp, color = Color(0xFF232C33))
+                HorizontalDivider(thickness = 2.dp, color = Color(0xFF232C33))
             }
         }
 
         HorizontalDivider(
             modifier = Modifier
                 .padding(start = 12.dp, end = 12.dp),
-            thickness = 2.dp,
+            thickness = 3.dp,
             color = Color.Black
         )
     }
@@ -2495,7 +2497,7 @@ fun SetGoal(
                     }
 
                     VerticalDivider(thickness = 2.dp)
-                    2
+
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
@@ -2522,7 +2524,9 @@ fun SetGoal(
                         }
                         TextButton(
                             onClick = {
-                                showDialog = true
+                                if(goalAmountTemp.isNotEmpty()) {
+                                    showDialog = true
+                                }
                             },
                             enabled = !isLocked,
                             modifier = Modifier.size(75.dp)
@@ -2548,103 +2552,6 @@ fun SetGoal(
     }
 }
 
-// 定義 Record 類別，用來統一收入和支出的資料
-/*data class Record(val date: String, val incomeAmount: Int, val expenseAmount: Int)
-
-@Composable
-fun BarChart(
-    incomeData: List<IncomeRecord>,
-    expenseData: List<ExpenseRecord>,
-    modifier: Modifier = Modifier
-) {
-    // 合併收入和支出的資料，計算餘額（收入 - 支出）
-    val combinedData = mutableMapOf<String, Int>()
-
-    incomeData.forEach { record ->
-        combinedData[record.date] =
-            (combinedData[record.date] ?: 0) + (record.amount.toIntOrNull() ?: 0)
-    }
-
-    expenseData.forEach { record ->
-        combinedData[record.date] =
-            (combinedData[record.date] ?: 0) - (record.amount.toIntOrNull() ?: 0)
-    }
-
-    // 找到最大餘額的絕對值，作為動態 maxAmount 的基礎
-    val maxBalance = combinedData.values.maxOfOrNull { kotlin.math.abs(it) } ?: 0
-    val maxAmount = maxBalance + 20000
-
-
-    val barWidth = 40f
-
-
-    Canvas(modifier = modifier) {
-        val width = size.width
-        val height = size.height
-
-        // 繪製背景
-        drawRect(
-            color = Color.LightGray,
-            size = size
-        )
-
-        // 計算 Y 軸的比例
-        val yRatio = height / maxAmount.toFloat()
-
-        // 計算條形圖的偏移量，每個條形圖之間有間隔
-        val barSpacing = barWidth * 2f
-
-        // 根據合併後的資料繪製條形圖
-        combinedData.entries.sortedBy { it.key }.forEachIndexed { index, entry ->
-            val (date, balance) = entry
-
-            // 跳過負值的餘額
-            if (balance <= 0) return@forEachIndexed
-
-            // 計算條形圖的位置
-            val xPos = index * barSpacing
-
-            // 確保條形圖不會超過畫布的邊界
-            val adjustedBarWidth = if (xPos + barWidth > width) width - xPos else barWidth
-
-            // 計算條形圖的高度與位置
-            val barHeight = balance * yRatio
-            val barTopY = height - barHeight
-
-            // 繪製條形圖
-            drawRect(
-                color = Color.Green,
-                topLeft = Offset(x = xPos, y = barTopY),
-                size = Size(adjustedBarWidth, barHeight)
-            )
-
-            // 顯示餘額金額
-            drawContext.canvas.nativeCanvas.drawText(
-                balance.toString() + "元",
-                xPos + barWidth / 2f,
-                barTopY - 10f, // 顯示位置
-                Paint().apply {
-                    color = android.graphics.Color.BLACK
-                    textAlign = Paint.Align.CENTER
-                    textSize = 40f
-                }
-            )
-
-            // 顯示日期
-            drawContext.canvas.nativeCanvas.drawText(
-                date,
-                xPos + barWidth / 2f,
-                height - 10f, // 日期顯示在畫布底部
-                Paint().apply {
-                    color = android.graphics.Color.BLACK
-                    textAlign = Paint.Align.CENTER
-                    textSize = 40f
-                }
-            )
-        }
-    }
-}*/
-
 @Composable
 fun PieChart(
     incomeData: List<IncomeRecord>,
@@ -2666,7 +2573,11 @@ fun PieChart(
     val colors = listOf(Color(0xFF4CAF50), Color(0xFFFF5252))
 
     // 繪製 Pie Chart
-    Canvas(modifier = modifier.size(280.dp)) {
+    Canvas(
+        modifier = modifier
+            .size(180.dp) // 設置固定大小
+            .aspectRatio(1f) // 確保寬高比例為 1:1
+    ) {
         val radius = size.minDimension / 2
         val center = Offset(size.width / 2, size.height / 2)
         var startAngle = 0f
@@ -2691,7 +2602,7 @@ fun PieChart(
                 textOffset.x,
                 textOffset.y,
                 Paint().apply {
-                    color = android.graphics.Color.WHITE
+                    color = android.graphics.Color.BLACK
                     textAlign = Paint.Align.CENTER
                     textSize = 40f
                 }
@@ -2719,7 +2630,7 @@ fun PieChart(
                 textOffset.x,
                 textOffset.y,
                 Paint().apply {
-                    color = android.graphics.Color.WHITE
+                    color = android.graphics.Color.BLACK
                     textAlign = Paint.Align.CENTER
                     textSize = 40f
                 }
@@ -2727,6 +2638,7 @@ fun PieChart(
         }
     }
 }
+
 
 
 @OptIn(ExperimentalAnimationApi::class)
