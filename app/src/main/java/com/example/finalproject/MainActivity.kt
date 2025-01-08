@@ -359,7 +359,6 @@ fun AccountingAssistant(
 
                 }
 
-
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -384,17 +383,14 @@ fun AccountingAssistant(
                 .fillMaxWidth()
                 .height(100.dp)
                 .background(color = Color(0xFFF4E8D7)),
-            //.padding(16.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),
-                //.padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -440,7 +436,6 @@ fun AccountingAssistant(
                         "所有紀錄",
                         fontSize = 20.sp
                     )
-
                 }
 
                 VerticalDivider(thickness = 2.dp)
@@ -469,7 +464,6 @@ fun AccountingAssistant(
         }
     }
 }
-
 
 @Composable
 fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = viewModel()) {
