@@ -90,22 +90,18 @@ import androidx.navigation.compose.rememberNavController
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.core.animateDpAsState
 import androidx.navigation.compose.composable
-
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.shape.RoundedCornerShape
-
 import com.example.finalproject.IncomeRecord
 import com.example.finalproject.ExpenseRecord
-
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import java.text.SimpleDateFormat
 import java.util.*
-
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.aspectRatio
@@ -118,7 +114,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.unit.dp
-
 import com.example.finalproject.Quadruple
 import kotlin.math.cos
 import kotlin.math.sin
@@ -141,18 +136,15 @@ class IncomeViewModel : ViewModel() {
 
     var incomeList = mutableStateListOf<IncomeRecord>()
 
-
     fun addIncome(amount: String, note: String) {
         val date = getCurrentDate()
         val incomeRecord = IncomeRecord(amount, note, date)
         incomeList.add(incomeRecord)
     }
 
-
     fun getTotalIncome(): Int {
         return incomeList.sumOf { it.amount.toIntOrNull() ?: 0 }
     }
-
 
     private fun getCurrentDate(): String {
         val sdf = SimpleDateFormat("MM/dd", Locale.getDefault()) // 日期格式
@@ -165,13 +157,11 @@ class ExpenseViewModel : ViewModel() {
 
     var expenseList = mutableStateListOf<ExpenseRecord>()
 
-
     fun addExpense(amount: String, note: String) {
         val date = getCurrentDate()
         val expenseRecord = ExpenseRecord(amount, note, date)
         expenseList.add(expenseRecord)
     }
-
 
     fun getTotalExpense(): Int {
         return expenseList.sumOf { it.amount.toIntOrNull() ?: 0 }
@@ -203,7 +193,6 @@ class GoalViewModel : ViewModel() {
     fun lockGoal() {
         isLocked.value = true
     }
-
 
     fun updateCurrentAmount(totalIncome: Int, totalExpense: Int) {
         balance.value = totalIncome - totalExpense
@@ -237,10 +226,6 @@ fun AccountingAssistant(
 
     var selectedChart by remember { mutableStateOf("PieChart") }
 
-
-    //val image = painterResource(R.drawable.expensive, R.drawable.spending)
-
-
     Column(
         modifier = modifier
             .background(color = Color(0xFFFAF9F6)),
@@ -261,9 +246,6 @@ fun AccountingAssistant(
             )
 
             Spacer(modifier = Modifier.height(20.dp))
-
-            // ElevatedButton
-
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -297,7 +279,6 @@ fun AccountingAssistant(
                         fontSize = 22.sp
                     )
                 }
-
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
@@ -364,7 +345,6 @@ fun AccountingAssistant(
                 }
             }
 
-
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly,
@@ -388,11 +368,8 @@ fun AccountingAssistant(
 
                 }
             }
-            //Spacer(modifier = Modifier.height(10.dp))
-
         }
     }
-
 
     Spacer(modifier = Modifier.height(10.dp))
 
@@ -447,7 +424,6 @@ fun AccountingAssistant(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-
 
                     TextButton(
                         onClick = { navController.navigate("allRecord") },
@@ -526,8 +502,6 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
         )
     }
 
-
-
     Scaffold(
         snackbarHost = {
             SnackbarHost(
@@ -546,17 +520,11 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                //verticalArrangement = Arrangement.SpaceEvenly
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-
                 Spacer(modifier = Modifier.height(180.dp))
                 IncomeList(incomeData = incomeViewModel.incomeList)
-
-
             }
-
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -578,12 +546,9 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    //.padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
-
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
@@ -604,7 +569,6 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                             "返回",
                             fontSize = 20.sp
                         )
-
                     }
 
                     VerticalDivider(thickness = 2.dp)
@@ -629,7 +593,6 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                             "刪除紀錄",
                             fontSize = 20.sp
                         )
-
                     }
                 }
             }
@@ -668,7 +631,6 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                         fontSize = 25.sp
                     )
 
-
                     Text(
                         "NT\$ ${incomeViewModel.getTotalIncome()}",
                         fontSize = 25.sp
@@ -685,7 +647,6 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                         width = 2.dp,
                         color = Color.Black,
                         shape = RoundedCornerShape(2.dp)
-
                     ),
 
                 contentAlignment = Alignment.Center
@@ -740,13 +701,9 @@ fun IncomePage(navController: NavController, incomeViewModel: IncomeViewModel = 
                     }
                 }
             }
-
-
         }
-
     }
 }
-
 
 @Composable
 fun IncomeList(incomeData: List<IncomeRecord>) {
@@ -779,7 +736,6 @@ fun IncomeList(incomeData: List<IncomeRecord>) {
             thickness = 3.dp,
             color = Color.Black
         )
-
 
         LazyColumn(
             modifier = Modifier
@@ -838,7 +794,6 @@ fun IncomeList(incomeData: List<IncomeRecord>) {
     }
 }
 
-
 @Composable
 fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewModel = viewModel()) {
 
@@ -859,15 +814,12 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
             modifier = Modifier
                 .fillMaxSize()
                 .padding(contentPadding)
-            //.padding(16.dp)
         ) {
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = Color(0xFFFAF9F6))
-
-                    //.padding(25.dp)
                     .align(Alignment.TopCenter),
 
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -887,9 +839,7 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
                     )
                 }
 
-
                 Spacer(modifier = Modifier.height(25.dp))
-
 
                 Column(
                     modifier = Modifier
@@ -915,7 +865,6 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
             }
         }
 
-
         Column(
             modifier = Modifier
                 .fillMaxSize(),
@@ -933,11 +882,9 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    //.padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -958,7 +905,6 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
                             "返回",
                             fontSize = 20.sp
                         )
-
                     }
 
                     Column(
@@ -1003,12 +949,10 @@ fun IncomeFunction(navController: NavController, incomeViewModel: IncomeViewMode
                             "輸入",
                             fontSize = 20.sp
                         )
-
                     }
                 }
             }
         }
-
     }
 }
 
@@ -1045,8 +989,6 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
         )
     }
 
-
-
     Scaffold(
         snackbarHost = {
             SnackbarHost(
@@ -1065,17 +1007,11 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                //verticalArrangement = Arrangement.SpaceEvenly
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
-
                 Spacer(modifier = Modifier.height(180.dp))
                 ExpenseList(expenseData = expenseViewModel.expenseList)
-
-
             }
-
         }
 
         Spacer(modifier = Modifier.height(30.dp))
@@ -1091,17 +1027,14 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
                     .fillMaxWidth()
                     .height(100.dp)
                     .background(color = Color(0xFFF4E8D7)),
-                //.padding(16.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    //.padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1148,7 +1081,6 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
                             "刪除紀錄",
                             fontSize = 20.sp
                         )
-
                     }
                 }
             }
@@ -1186,7 +1118,6 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
                         "目前支出",
                         fontSize = 25.sp
                     )
-
 
                     Text(
                         "NT\$ ${expenseViewModel.getTotalExpense()}",
@@ -1228,7 +1159,6 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
                         )
                         Spacer(modifier = Modifier.height(16.dp))
 
-
                         TextField(
                             value = expenseNote,
                             onValueChange = { expenseNote = it },
@@ -1237,7 +1167,6 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
                         )
 
                         Spacer(modifier = Modifier.height(27.dp))
-
 
                         Button(
                             onClick = {
@@ -1259,10 +1188,7 @@ fun ExpensePage(navController: NavController, expenseViewModel: ExpenseViewModel
                     }
                 }
             }
-
-
         }
-
     }
 }
 
@@ -1274,7 +1200,6 @@ fun ExpenseList(expenseData: List<ExpenseRecord>) {
             .fillMaxWidth()
             .padding(12.dp)
     ) {
-
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -1342,7 +1267,6 @@ fun ExpenseList(expenseData: List<ExpenseRecord>) {
                         color = Color.Black
                     )
                 }
-
                 HorizontalDivider(thickness = 2.dp, color = Color(0xFF232C33))
             }
         }
@@ -1355,7 +1279,6 @@ fun ExpenseList(expenseData: List<ExpenseRecord>) {
         )
     }
 }
-
 
 @Composable
 fun ExpenseFunction(
@@ -1401,7 +1324,7 @@ fun ExpenseFunction(
                     Text(
                         text = "輸入支出",
                         fontSize = 24.sp,
-                        color = Color.White // 使用白色字體在藍色背景上
+                        color = Color.White
                     )
                 }
 
@@ -1442,17 +1365,14 @@ fun ExpenseFunction(
                     .fillMaxWidth()
                     .height(100.dp)
                     .background(color = Color(0xFFF4E8D7)),
-                //.padding(16.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    //.padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1518,12 +1438,10 @@ fun ExpenseFunction(
                             "輸入",
                             fontSize = 20.sp
                         )
-
                     }
                 }
             }
         }
-
     }
 }
 
@@ -1552,10 +1470,6 @@ fun BalanceDisplay(
         "當前設定目標金額: NT\$ $totalGoal"
     }
 
-
-
-
-
     Row(
         modifier = Modifier
             .fillMaxWidth(),
@@ -1571,9 +1485,7 @@ fun BalanceDisplay(
             } else {
                 Color.Black
             }
-
         )
-
     }
 
     Spacer(modifier = Modifier.height(10.dp))
@@ -1594,7 +1506,6 @@ fun BalanceDisplay(
     )
 }
 
-
 @Composable
 fun DeleteDataPage(
     navController: NavController,
@@ -1604,8 +1515,6 @@ fun DeleteDataPage(
     var selectedIncomeItems by remember { mutableStateOf<Set<Int>>(emptySet()) }
     var selectedExpenseItems by remember { mutableStateOf<Set<Int>>(emptySet()) }
     var showDialog by remember { mutableStateOf(false) }
-
-
 
     Box(
         modifier = Modifier
@@ -1617,13 +1526,8 @@ fun DeleteDataPage(
             modifier = Modifier
                 .fillMaxSize()
                 .background(color = Color(0xFFFAF9F6))
-                //.padding(16.dp),
                 .align(Alignment.TopCenter),
-            //horizontalAlignment = Alignment.Start,
-            //verticalArrangement = Arrangement.SpaceBetween
-
         ) {
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -1634,7 +1538,7 @@ fun DeleteDataPage(
                 Text(
                     text = "選擇要刪除紀錄的項目",
                     fontSize = 24.sp,
-                    color = Color.White // 使用白色字體在藍色背景上
+                    color = Color.White
                 )
             }
 
@@ -1643,8 +1547,6 @@ fun DeleteDataPage(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                //.background(color = Color(0xFFFF8552)),
-                //contentAlignment = Alignment.Center
             ) {
                 Column {
 
@@ -1663,8 +1565,6 @@ fun DeleteDataPage(
                     }
 
                     HorizontalDivider(thickness = 3.dp, color = Color.Black)
-                    //Spacer(modifier = Modifier.height(16.dp))
-
 
                     LazyColumn(
                         modifier = Modifier
@@ -1680,7 +1580,6 @@ fun DeleteDataPage(
                                     .fillMaxWidth()
                                     .padding(vertical = 3.dp)
                                     .clickable {
-                                        // 點擊時切換選擇狀態
                                         selectedIncomeItems =
                                             if (selectedIncomeItems.contains(index)) {
                                                 selectedIncomeItems - index
@@ -1738,8 +1637,6 @@ fun DeleteDataPage(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                //.background(color = Color(0xFFFF8552)),
-                //contentAlignment = Alignment.Center
             ) {
                 Column {
 
@@ -1775,7 +1672,6 @@ fun DeleteDataPage(
                                     .fillMaxWidth()
                                     .padding(vertical = 3.dp)
                                     .clickable {
-                                        // 點擊時切換選擇狀態
                                         selectedExpenseItems =
                                             if (selectedExpenseItems.contains(index)) {
                                                 selectedExpenseItems - index
@@ -1829,7 +1725,6 @@ fun DeleteDataPage(
             HorizontalDivider(thickness = 2.dp, color = Color.Black)
         }
 
-
         Column(
             modifier = Modifier
                 .fillMaxSize(),
@@ -1841,17 +1736,14 @@ fun DeleteDataPage(
                     .fillMaxWidth()
                     .height(100.dp)
                     .background(color = Color(0xFFF4E8D7)),
-                //.padding(16.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth(),
-                    //.padding(horizontal = 16.dp),
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-
 
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -1872,7 +1764,6 @@ fun DeleteDataPage(
                             "返回",
                             fontSize = 20.sp
                         )
-
                     }
 
                     VerticalDivider(thickness = 2.dp)
@@ -1914,7 +1805,6 @@ fun DeleteDataPage(
                                     expenseViewModel.expenseList.clear()
                                     expenseViewModel.expenseList.addAll(updatedExpenseList)
 
-
                                     // 清空選擇的項目
                                     selectedIncomeItems = emptySet()
                                     selectedExpenseItems = emptySet()
@@ -1950,7 +1840,6 @@ fun DeleteDataPage(
                             "刪除項目",
                             fontSize = 20.sp
                         )
-
                     }
                 }
             }
@@ -1972,7 +1861,6 @@ fun EnterCheckDialog(
         text = {
             Text(text = checkText)
         },
-
 
         onDismissRequest = { onDismissRequest() },
         confirmButton = {
@@ -2025,7 +1913,6 @@ fun InfoCheckDialog(
             }
         },
 
-
         onDismissRequest = { onDismissRequest() },
         confirmButton = {
             TextButton(
@@ -2049,7 +1936,6 @@ fun TextCard(totalIncome: Int, totalExpense: Int, totalGoal: Int, navController:
         ),
         modifier = Modifier
             .size(width = 500.dp, height = 180.dp)
-        //.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
@@ -2137,7 +2023,7 @@ fun AllRecord(
                     .fillMaxWidth()
                     .height(600.dp)
             ) {
-                items(allRecords) { item -> // 顯示交替後的資料
+                items(allRecords) { item ->
                     Column {
                         Row(
                             modifier = Modifier
@@ -2150,7 +2036,6 @@ fun AllRecord(
                             val type = item.third
                             val date = item.fourth
 
-                            // 根據類型顯示顏色和符號
                             Text(
                                 modifier = Modifier.weight(1f),
                                 text = if (type == "income") "+$amount 元" else "-$amount 元",
@@ -2180,7 +2065,6 @@ fun AllRecord(
 
             Spacer(modifier = Modifier.height(20.dp))
         }
-
 
         Column(
             modifier = Modifier
@@ -2252,13 +2136,11 @@ fun SetGoal(
     val goalAmount = goalViewModel.goalAmount.value.toString()
     val goalAmountInt = goalViewModel.goalAmount.value
 
-    // 這裡將 goalAmountTemp 初始化為空字串，並且它用來綁定 TextField
+    //用來綁定 TextField
     var goalAmountTemp by remember { mutableStateOf("") }
 
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-
-
 
     Scaffold(
         snackbarHost = {
@@ -2324,7 +2206,6 @@ fun SetGoal(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -2356,17 +2237,8 @@ fun SetGoal(
                                 )
                             }
                         }
-
-                        /*   //檢查用
-                    Text(text = "goalAmount: $goalAmount", fontSize = 18.sp, color = Color.Black)
-                    val goalAmountInt = goalAmount.toIntOrNull() ?: 0
-                    Text(text = "goalAmountInt: $goalAmountInt", fontSize = 18.sp, color = Color.Black)
-                    Text(text = "balance: $balance", fontSize = 18.sp, color = Color.Black)*/
-
-
                     }
                     Spacer(modifier = Modifier.height(60.dp))
-
 
                     Text(
                         text = "當前設定目標金額: $goalAmountInt" + "元",
@@ -2466,8 +2338,6 @@ fun SetGoal(
                             )
                         }
 
-
-
                         TextButton(
                             onClick = {
                                 val goalAmountInt = goalAmount.toIntOrNull() ?: 0
@@ -2476,7 +2346,6 @@ fun SetGoal(
                                 } else if (!isLocked) {
                                     showLockDialog = true
                                 }
-
                             },
                             modifier = Modifier.size(75.dp)
                         ) {
@@ -2524,7 +2393,7 @@ fun SetGoal(
                         }
                         TextButton(
                             onClick = {
-                                if(goalAmountTemp.isNotEmpty()) {
+                                if (goalAmountTemp.isNotEmpty()) {
                                     showDialog = true
                                 }
                             },
@@ -2638,8 +2507,6 @@ fun PieChart(
         }
     }
 }
-
-
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -2802,7 +2669,6 @@ fun AppNavigation() {
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable
